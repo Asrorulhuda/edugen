@@ -1,0 +1,120 @@
+import { SVGAttributes } from 'react';
+
+interface ApplicationLogoProps extends SVGAttributes<SVGElement> {
+    className?: string;
+    src?: string | null;
+}
+
+export default function ApplicationLogo({
+    className = 'w-9 h-9',
+    src,
+    ...props
+}: ApplicationLogoProps) {
+    if (src) {
+        return (
+            <img
+                src={src}
+                alt="Logo"
+                className={`${className} object-contain`}
+            />
+        );
+    }
+
+    return (
+        <svg
+            viewBox="0 0 140 140"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <defs>
+                {/* Body Gradient */}
+                <linearGradient id="edugenOwlBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#047857" />
+                </linearGradient>
+                {/* Belly Gradient */}
+                <linearGradient id="edugenOwlBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#f0fdf4" />
+                    <stop offset="100%" stopColor="#dcfce7" />
+                </linearGradient>
+                {/* Beak Gradient */}
+                <linearGradient id="edugenBeakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fbbf24" />
+                    <stop offset="100%" stopColor="#f59e0b" />
+                </linearGradient>
+            </defs>
+
+            {/* Ears / Feather Tufts */}
+            <path d="M 32 45 L 20 20 L 48 34 Z" fill="#059669" />
+            <path d="M 108 45 L 120 20 L 92 34 Z" fill="#047857" />
+
+            {/* Main Rounded Body */}
+            <rect
+                x="24"
+                y="30"
+                width="92"
+                height="90"
+                rx="46"
+                fill="url(#edugenOwlBody)"
+            />
+
+            {/* Cute Belly */}
+            <ellipse cx="70" cy="92" rx="30" ry="24" fill="url(#edugenOwlBelly)" opacity="0.95" />
+
+            {/* Belly Feather Details */}
+            <path
+                d="M 64 85 Q 70 88 76 85 M 60 92 Q 70 96 80 92 M 65 99 Q 70 102 75 99"
+                stroke="#10b981"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+                opacity="0.75"
+            />
+
+            {/* Cheerful Blushing Cheeks */}
+            <circle cx="36" cy="74" r="6" fill="#f43f5e" opacity="0.4" />
+            <circle cx="104" cy="74" r="6" fill="#f43f5e" opacity="0.4" />
+
+            {/* Eyes Outer White */}
+            <circle cx="50" cy="62" r="16" fill="#ffffff" />
+            <circle cx="90" cy="62" r="16" fill="#ffffff" />
+
+            {/* Big Expressive Pupils & Highlights */}
+            <circle cx="50" cy="62" r="8.5" fill="#0f172a" />
+            <circle cx="47" cy="59" r="3.2" fill="#ffffff" />
+            <circle cx="53" cy="65" r="1.4" fill="#ffffff" />
+
+            <circle cx="90" cy="62" r="8.5" fill="#0f172a" />
+            <circle cx="87" cy="59" r="3.2" fill="#ffffff" />
+            <circle cx="93" cy="65" r="1.4" fill="#ffffff" />
+
+            {/* Cute Round Academic Glasses */}
+            <circle cx="50" cy="62" r="18" stroke="#065f46" strokeWidth="2.5" fill="none" />
+            <circle cx="90" cy="62" r="18" stroke="#065f46" strokeWidth="2.5" fill="none" />
+            <path d="M 68 60 Q 70 57 72 60" stroke="#065f46" strokeWidth="2.5" fill="none" />
+
+            {/* Cheerful Beak */}
+            <polygon points="66,68 74,68 70,78" fill="url(#edugenBeakGrad)" />
+
+            {/* Graduation Cap (Toga Sarjana) */}
+            <g>
+                <ellipse cx="70" cy="27" rx="14" ry="5" fill="#1e293b" />
+                <polygon points="70,12 96,23 70,30 44,23" fill="#0f172a" />
+                <path d="M 70 20 Q 84 22 88 32" stroke="#fbbf24" strokeWidth="2" fill="none" />
+                <circle cx="88" cy="33" r="2.5" fill="#f59e0b" />
+                <circle cx="70" cy="21" r="2" fill="#fbbf24" />
+            </g>
+
+            {/* Left & Right Wings */}
+            <path d="M 24 75 Q 14 88 22 102 Q 30 100 34 88 Z" fill="#065f46" />
+            <path d="M 116 75 Q 126 88 118 102 Q 110 100 106 88 Z" fill="#047857" />
+
+            {/* Feet */}
+            <ellipse cx="56" cy="120" rx="7" ry="4" fill="#f59e0b" />
+            <ellipse cx="84" cy="120" rx="7" ry="4" fill="#f59e0b" />
+        </svg>
+    );
+}
+

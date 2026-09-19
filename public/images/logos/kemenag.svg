@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- Kementerian Agama Ikhlas Beramal Emblem -->
+  <defs>
+    <radialGradient id="kemenagGreen" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </radialGradient>
+    <linearGradient id="kGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Pentagon (Segi Lima) -->
+  <polygon points="100,10 185,72 153,172 47,172 15,72" fill="url(#kemenagGreen)" stroke="#facc15" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="100,18 177,75 147,165 53,165 23,75" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.9"/>
+
+  <!-- Star of Faith (Bintang Sembilan / Bintang Emas) -->
+  <polygon points="100,34 103,44 113,44 105,50 108,60 100,54 92,60 95,50 87,44 97,44" fill="url(#kGold)" stroke="#a16207" stroke-width="0.8"/>
+
+  <!-- Holy Book / Kitab Suci Al-Qur'an & Rays -->
+  <!-- Rays -->
+  <g stroke="#fef08a" stroke-width="1.2" opacity="0.85">
+    <line x1="100" y1="62" x2="100" y2="72" />
+    <line x1="88" y1="65" x2="94" y2="73" />
+    <line x1="112" y1="65" x2="106" y2="73" />
+    <line x1="80" y1="74" x2="88" y2="78" />
+    <line x1="120" y1="74" x2="112" y2="78" />
+  </g>
+
+  <!-- Open Holy Book -->
+  <path d="M100,75 C88,70 72,71 58,78 C68,90 84,89 100,84 C116,89 132,90 142,78 C128,71 112,70 100,75 Z" fill="#ffffff" stroke="#047857" stroke-width="1.5"/>
+  <path d="M100,75 L100,94" stroke="#064e3b" stroke-width="1.5"/>
+  <path d="M58,78 L58,88 C72,82 88,82 100,87 C112,82 128,82 142,88 L142,78" fill="#f0fdf4" stroke="#047857" stroke-width="1.5"/>
+
+  <!-- Scales of Justice (Timbangan Keadilan) -->
+  <line x1="100" y1="92" x2="100" y2="135" stroke="url(#kGold)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="68" y1="104" x2="132" y2="104" stroke="url(#kGold)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Left Pan -->
+  <line x1="72" y1="104" x2="64" y2="118" stroke="#fef08a" stroke-width="1"/>
+  <line x1="72" y1="104" x2="80" y2="118" stroke="#fef08a" stroke-width="1"/>
+  <path d="M62,118 Q72,124 82,118 Z" fill="url(#kGold)" stroke="#a16207" stroke-width="1"/>
+  <!-- Right Pan -->
+  <line x1="128" y1="104" x2="120" y2="118" stroke="#fef08a" stroke-width="1"/>
+  <line x1="128" y1="104" x2="136" y2="118" stroke="#fef08a" stroke-width="1"/>
+  <path d="M118,118 Q128,124 138,118 Z" fill="url(#kGold)" stroke="#a16207" stroke-width="1"/>
+
+  <!-- Base of Scale -->
+  <path d="M90,135 L110,135 L106,140 L94,140 Z" fill="url(#kGold)" stroke="#a16207" stroke-width="1"/>
+
+  <!-- Rice and Cotton (Padi & Kapas) Garland around base -->
+  <!-- Left Rice Garland -->
+  <path d="M46,140 Q40,110 52,88" stroke="#facc15" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Right Cotton Garland -->
+  <path d="M154,140 Q160,110 148,88" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Slogan Ribbon: IKHLAS BERAMAL -->
+  <path d="M46,154 Q100,165 154,154 Q160,162 150,167 Q100,175 50,167 Q40,162 46,154 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="100" y="163.5" font-family="'Arial', sans-serif" font-size="7.5" font-weight="bold" fill="#064e3b" text-anchor="middle" letter-spacing="1">IKHLAS BERAMAL</text>
+</svg>
