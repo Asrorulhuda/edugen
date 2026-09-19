@@ -52,9 +52,8 @@ jobs:
         with:
           host: ${{ secrets.CPANEL_SSH_HOST }}
           username: ${{ secrets.CPANEL_SSH_USER }}
-          key: ${{ secrets.CPANEL_SSH_KEY }}
           password: ${{ secrets.CPANEL_SSH_PASSWORD }}
-          port: ${{ secrets.CPANEL_SSH_PORT || '22' }}
+          port: ${{ secrets.CPANEL_SSH_PORT }}
           source: 'public/build'
           target: '${{ secrets.CPANEL_PROJECT_PATH }}'
 
@@ -63,9 +62,8 @@ jobs:
         with:
           host: ${{ secrets.CPANEL_SSH_HOST }}
           username: ${{ secrets.CPANEL_SSH_USER }}
-          key: ${{ secrets.CPANEL_SSH_KEY }}
           password: ${{ secrets.CPANEL_SSH_PASSWORD }}
-          port: ${{ secrets.CPANEL_SSH_PORT || '22' }}
+          port: ${{ secrets.CPANEL_SSH_PORT }}
           script: |
             set -e
             echo "🚀 Starting EduGen Deployment on cPanel..."
