@@ -67,8 +67,8 @@ if (!is_dir($projectDir) || !chdir($projectDir)) {
 
 // 4. Eksekusi rangkaian perintah deployment
 $commands = [
-    'git reset --hard HEAD',
-    'git pull origin main',
+    'git fetch origin main',
+    'git reset --hard origin/main',
     'php artisan migrate --force',
     'php artisan storage:link || true',
     'php artisan optimize:clear',
