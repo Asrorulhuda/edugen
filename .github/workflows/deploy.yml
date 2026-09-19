@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-and-build:
+  build-frontend:
     name: Build Frontend Assets
     runs-on: ubuntu-latest
 
@@ -15,33 +15,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, xml, ctype, iconv, intl, bcmath, zip, gd
-          coverage: none
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Prepare Environment File
-        run: |
-          cp .env.example .env
+      - name: Install Node Dependencies
+        run: npm ci
 
-      - name: Install PHP Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
-
-      - name: Generate Application Key
-        run: php artisan key:generate
-
-      - name: Install Node Dependencies & Build Assets
-        run: |
-          npm ci
-          npm run build
+      - name: Build Production Assets
+        run: npm run build
 
       - name: Upload Compiled Frontend Artifact
         uses: actions/upload-artifact@v4
@@ -52,7 +36,7 @@ jobs:
 
   deploy:
     name: Deploy to cPanel Server
-    needs: test-and-build
+    needs: build-frontend
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -94,7 +78,7 @@ jobs:
             git reset --hard HEAD
             git pull origin main
 
-            echo "🐘 Installing Composer dependencies..."
+            echo "🐘 Installing Composer dependencies on server..."
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
             echo "🗄️ Running Database Migrations..."
