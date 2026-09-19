@@ -52,7 +52,7 @@ jobs:
         with:
           host: ${{ secrets.CPANEL_SSH_HOST }}
           username: ${{ secrets.CPANEL_SSH_USER }}
-          password: ${{ secrets.CPANEL_SSH_PASSWORD }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
           port: ${{ secrets.CPANEL_SSH_PORT }}
           source: 'public/build'
           target: '${{ secrets.CPANEL_PROJECT_PATH }}'
@@ -62,7 +62,7 @@ jobs:
         with:
           host: ${{ secrets.CPANEL_SSH_HOST }}
           username: ${{ secrets.CPANEL_SSH_USER }}
-          password: ${{ secrets.CPANEL_SSH_PASSWORD }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
           port: ${{ secrets.CPANEL_SSH_PORT }}
           script: |
             set -e
