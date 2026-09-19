@@ -1,0 +1,119 @@
+name: Deploy EduGen to cPanel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    name: Test & Build Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, bcmath, zip, gd
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install PHP Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare Laravel Environment for Testing
+        run: |
+          cp .env.example .env.testing
+          php artisan key:generate --env=testing
+
+      - name: Install Node Dependencies & Build Assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run Backend Tests
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: php artisan test
+
+      - name: Upload Compiled Frontend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: public/build/
+          retention-days: 1
+
+  deploy:
+    name: Deploy to cPanel Server
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download Compiled Frontend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: public/build
+
+      - name: Transfer Build Assets to cPanel via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.CPANEL_SSH_HOST }}
+          username: ${{ secrets.CPANEL_SSH_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          password: ${{ secrets.CPANEL_SSH_PASSWORD }}
+          port: ${{ secrets.CPANEL_SSH_PORT || '22' }}
+          source: 'public/build'
+          target: '${{ secrets.CPANEL_PROJECT_PATH }}'
+
+      - name: Execute Remote Deployment via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.CPANEL_SSH_HOST }}
+          username: ${{ secrets.CPANEL_SSH_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          password: ${{ secrets.CPANEL_SSH_PASSWORD }}
+          port: ${{ secrets.CPANEL_SSH_PORT || '22' }}
+          script: |
+            set -e
+            echo "🚀 Starting EduGen Deployment on cPanel..."
+            cd ${{ secrets.CPANEL_PROJECT_PATH }}
+
+            # Masuk mode maintenance sementara agar transisi aman
+            php artisan down --secret="edugen-deploy" || true
+
+            echo "📦 Pulling latest changes from Git..."
+            git reset --hard HEAD
+            git pull origin main
+
+            echo "🐘 Installing Composer dependencies..."
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            echo "🗄️ Running Database Migrations..."
+            php artisan migrate --force
+
+            echo "🔗 Ensuring Storage Link..."
+            php artisan storage:link || true
+
+            echo "⚡ Optimizing Laravel caches..."
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Keluar dari mode maintenance
+            php artisan up
+
+            echo "✅ EduGen Deployment successfully finished!"
