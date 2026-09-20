@@ -82,6 +82,10 @@ if (!$isCli) {
                         <label for="token">Token Keamanan Deployment</label>
                         <input type="text" id="token" name="token" value="edugen_deploy_secret_2026" required autofocus placeholder="Masukkan token rahasia">
                     </div>
+                    <div class="input-group">
+                        <label for="promote_email">Email Akun Anda (Otomatis Jadikan Super Admin)</label>
+                        <input type="email" id="promote_email" name="promote_email" value="asrorulhuda@gmail.com" placeholder="Email akun Anda">
+                    </div>
                     <button type="submit">Jalankan Update Database Sekarang ➔</button>
                 </form>
                 <div class="quick-link">
@@ -198,7 +202,64 @@ foreach ($smartSeeders as $seed) {
     }
 }
 
-// 7. Optimasi Cache & Storage Link
+// 7. Jaminan Hak Akses Super Admin Platform (Khususnya akun asrorulhuda@gmail.com & admin@edugen.id)
+try {
+    $superRole = \App\Models\Role::where('name', 'SUPER_ADMIN')->first();
+    if (!$superRole) {
+        $logs[] = runArtisanCommand('db:seed', ['--class' => 'RoleAndPermissionSeeder', '--force' => true]);
+        $superRole = \App\Models\Role::where('name', 'SUPER_ADMIN')->first();
+    }
+
+    if ($superRole) {
+        $platformTenant = \App\Models\Tenant::firstOrCreate(
+            ['slug' => 'platform-core'],
+            ['name' => 'EduGen Platform Core', 'tenant_type' => 'INDIVIDUAL', 'status' => 'ACTIVE']
+        );
+
+        $promoteInput = trim((string) ($_POST['promote_email'] ?? $_GET['promote_email'] ?? ''));
+        $targetEmails = array_filter(array_unique([
+            'admin@edugen.id',
+            'asrorulhuda@gmail.com',
+            strtolower((string) env('SUPERADMIN_EMAIL', '')),
+            strtolower($promoteInput),
+        ]));
+
+        $promotedUsers = [];
+        foreach ($targetEmails as $targetEmail) {
+            $user = \App\Models\User::where('email', $targetEmail)->first();
+            if ($user) {
+                \App\Models\TenantMembership::firstOrCreate(
+                    [
+                        'tenant_id' => $platformTenant->id,
+                        'user_id' => $user->id,
+                    ],
+                    [
+                        'role_id' => $superRole->id,
+                        'membership_status' => 'ACTIVE',
+                        'is_default' => true,
+                    ]
+                );
+                $promotedUsers[] = $targetEmail;
+            }
+        }
+
+        $logs[] = [
+            'command' => 'superadmin:sync',
+            'status' => 'SUCCESS',
+            'duration' => '0.01s',
+            'output' => 'Super Admin tersinkronisasi: ' . implode(', ', $promotedUsers),
+        ];
+    }
+} catch (\Throwable $e) {
+    $logs[] = [
+        'command' => 'superadmin:sync',
+        'status' => 'EXCEPTION',
+        'duration' => '0.00s',
+        'output' => 'Gagal sinkronisasi superadmin: ' . $e->getMessage(),
+    ];
+}
+
+// 8. Optimasi Cache & Storage Link
 $logs[] = runArtisanCommand('optimize:clear');
 $logs[] = runArtisanCommand('config:cache');
 $logs[] = runArtisanCommand('route:cache');

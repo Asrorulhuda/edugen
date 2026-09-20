@@ -116,6 +116,16 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
+        $superAdminEmails = array_filter(array_map('trim', [
+            'admin@edugen.id',
+            'asrorulhuda@gmail.com',
+            (string) env('SUPERADMIN_EMAIL', ''),
+        ]));
+
+        if ($this->email && in_array(strtolower($this->email), array_map('strtolower', $superAdminEmails), true)) {
+            return true;
+        }
+
         return $this->memberships()
             ->whereHas('role', function ($query) {
                 $query->where('name', 'SUPER_ADMIN');
