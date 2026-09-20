@@ -3,13 +3,11 @@
 declare(strict_types=1);
 
 /**
- * GitHub deployment webhook for EduGen.
+ * Fast GitHub webhook endpoint.
  *
- * Required .env value:
- * DEPLOY_WEBHOOK_SECRET=<same value configured in GitHub webhook>
- *
- * Optional hardening:
- * DEPLOY_GITHUB_REPOSITORY=owner/repository
+ * This endpoint only authenticates and queues a deployment. The long-running
+ * work is handled by deploy-worker.php so GitHub receives a response before
+ * its HTTP timeout.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -38,9 +36,7 @@ function envValue(string $envFile, string $key): ?string
             continue;
         }
 
-        $value = trim(substr($line, strlen($key) + 1));
-
-        return trim($value, "\"'");
+        return trim(trim(substr($line, strlen($key) + 1)), "\"'");
     }
 
     return null;
@@ -52,7 +48,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
 }
 
 $projectDir = dirname(__DIR__);
-$secret = envValue($projectDir . '/.env', 'DEPLOY_WEBHOOK_SECRET');
+$envFile = $projectDir . '/.env';
+$secret = envValue($envFile, 'DEPLOY_WEBHOOK_SECRET');
 
 if ($secret === null || strlen($secret) < 32) {
     respond(503, [
@@ -63,19 +60,18 @@ if ($secret === null || strlen($secret) < 32) {
 
 $rawPayload = file_get_contents('php://input') ?: '';
 $signature = $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '';
-$manualToken = $_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '';
 $signatureIsValid = $signature !== ''
     && hash_equals('sha256=' . hash_hmac('sha256', $rawPayload, $secret), $signature);
-$manualTokenIsValid = $manualToken !== '' && hash_equals($secret, $manualToken);
 
-if (!$signatureIsValid && !$manualTokenIsValid) {
+if (!$signatureIsValid) {
     respond(403, ['status' => 'error', 'message' => 'Invalid webhook signature.']);
 }
 
 $event = $_SERVER['HTTP_X_GITHUB_EVENT'] ?? '';
-$payload = $rawPayload !== '' ? json_decode($rawPayload, true) : [];
+$deliveryId = $_SERVER['HTTP_X_GITHUB_DELIVERY'] ?? '';
+$payload = json_decode($rawPayload, true);
 
-if ($rawPayload !== '' && !is_array($payload)) {
+if (!is_array($payload)) {
     respond(400, ['status' => 'error', 'message' => 'Invalid JSON payload.']);
 }
 
@@ -83,94 +79,81 @@ if ($event === 'ping') {
     respond(200, ['status' => 'success', 'message' => 'Webhook is configured.']);
 }
 
-if ($signatureIsValid && $event !== 'push') {
+if ($event !== 'push') {
     respond(202, ['status' => 'ignored', 'message' => 'Only push events trigger deployment.']);
 }
 
-if (isset($payload['ref']) && $payload['ref'] !== 'refs/heads/main') {
+if (($payload['ref'] ?? '') !== 'refs/heads/main') {
     respond(202, [
         'status' => 'ignored',
         'message' => 'Push was not for the main branch.',
-        'ref' => $payload['ref'],
+        'ref' => $payload['ref'] ?? null,
     ]);
 }
 
-$expectedRepository = envValue($projectDir . '/.env', 'DEPLOY_GITHUB_REPOSITORY');
-$payloadRepository = $payload['repository']['full_name'] ?? null;
-if ($expectedRepository && $payloadRepository && !hash_equals($expectedRepository, $payloadRepository)) {
+$expectedRepository = envValue($envFile, 'DEPLOY_GITHUB_REPOSITORY');
+$payloadRepository = $payload['repository']['full_name'] ?? '';
+if ($expectedRepository && !hash_equals($expectedRepository, $payloadRepository)) {
     respond(403, ['status' => 'error', 'message' => 'Repository does not match deployment configuration.']);
 }
 
-if (!is_dir($projectDir . '/.git') || !chdir($projectDir)) {
-    respond(500, ['status' => 'error', 'message' => 'Deployment directory is invalid.']);
+$expectedCommit = strtolower((string) ($payload['after'] ?? ''));
+if (!preg_match('/^[a-f0-9]{40}$/', $expectedCommit)) {
+    respond(400, ['status' => 'error', 'message' => 'Push payload does not contain a valid commit.']);
+}
+
+if (!is_dir($projectDir . '/.git') || !is_file($projectDir . '/deploy-worker.php')) {
+    respond(500, ['status' => 'error', 'message' => 'Deployment files are incomplete.']);
 }
 
 if (!is_callable('exec')) {
     respond(500, ['status' => 'error', 'message' => 'Command execution is disabled on this server.']);
 }
 
-$lockHandle = fopen(sys_get_temp_dir() . '/edugen-deploy.lock', 'c');
-if ($lockHandle === false || !flock($lockHandle, LOCK_EX | LOCK_NB)) {
-    respond(409, ['status' => 'busy', 'message' => 'Another deployment is currently running.']);
+$queueDir = $projectDir . '/storage/app/deploy';
+if (!is_dir($queueDir) && !mkdir($queueDir, 0750, true) && !is_dir($queueDir)) {
+    respond(500, ['status' => 'error', 'message' => 'Unable to create deployment queue directory.']);
 }
 
-$commands = [
-    ['name' => 'fetch', 'command' => 'git fetch --prune origin main'],
-    ['name' => 'checkout', 'command' => 'git reset --hard origin/main'],
-    ['name' => 'dependencies', 'command' => 'composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress'],
-    ['name' => 'application', 'command' => 'php public/update_db.php'],
+$request = [
+    'commit' => $expectedCommit,
+    'delivery_id' => preg_replace('/[^a-zA-Z0-9-]/', '', $deliveryId),
+    'repository' => $payloadRepository,
+    'queued_at' => date(DATE_ATOM),
 ];
+$pendingFile = $queueDir . '/pending.json';
+$temporaryFile = $queueDir . '/pending.' . bin2hex(random_bytes(8)) . '.tmp';
+$encodedRequest = json_encode($request, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-$logs = [];
-$startedAt = microtime(true);
-$failed = false;
-
-foreach ($commands as $step) {
-    $output = [];
-    $exitCode = 0;
-    exec($step['command'] . ' 2>&1', $output, $exitCode);
-
-    $logs[] = [
-        'step' => $step['name'],
-        'exit_code' => $exitCode,
-        'output' => substr(implode("\n", $output), 0, 12000),
-    ];
-
-    if ($exitCode !== 0) {
-        $failed = true;
-        break;
-    }
+if ($encodedRequest === false || file_put_contents($temporaryFile, $encodedRequest, LOCK_EX) === false) {
+    respond(500, ['status' => 'error', 'message' => 'Unable to write deployment request.']);
 }
 
-$expectedCommit = $payload['after'] ?? null;
-$commitOutput = [];
-$commitExitCode = 0;
-exec('git rev-parse HEAD 2>&1', $commitOutput, $commitExitCode);
-$deployedCommit = $commitExitCode === 0 ? trim(implode("\n", $commitOutput)) : '';
-if (!$failed && $commitExitCode !== 0) {
-    $failed = true;
-    $logs[] = [
-        'step' => 'verify-commit',
-        'exit_code' => $commitExitCode,
-        'output' => substr(implode("\n", $commitOutput), 0, 12000),
-    ];
-}
-if (!$failed && $expectedCommit && !hash_equals($expectedCommit, $deployedCommit)) {
-    $failed = true;
-    $logs[] = [
-        'step' => 'verify-commit',
-        'exit_code' => 1,
-        'output' => 'Deployed commit does not match the GitHub push payload.',
-    ];
+if (!rename($temporaryFile, $pendingFile)) {
+    @unlink($temporaryFile);
+    respond(500, ['status' => 'error', 'message' => 'Unable to queue deployment request.']);
 }
 
-flock($lockHandle, LOCK_UN);
-fclose($lockHandle);
+$phpBinary = envValue($envFile, 'DEPLOY_PHP_BINARY') ?: 'php';
+$workerCommand = sprintf(
+    'nohup %s %s > /dev/null 2>&1 &',
+    escapeshellarg($phpBinary),
+    escapeshellarg($projectDir . '/deploy-worker.php')
+);
+$output = [];
+$exitCode = 0;
+exec($workerCommand, $output, $exitCode);
 
-respond($failed ? 500 : 200, [
-    'status' => $failed ? 'error' : 'success',
-    'message' => $failed ? 'Deployment stopped because a step failed.' : 'Deployment completed successfully.',
-    'commit' => $deployedCommit,
-    'duration_seconds' => round(microtime(true) - $startedAt, 2),
-    'log' => $logs,
+if ($exitCode !== 0) {
+    respond(500, [
+        'status' => 'error',
+        'message' => 'Deployment was queued but the background worker could not be started.',
+    ]);
+}
+
+respond(202, [
+    'status' => 'queued',
+    'message' => 'Deployment accepted and will continue in the background.',
+    'commit' => $expectedCommit,
+    'delivery_id' => $request['delivery_id'],
 ]);
