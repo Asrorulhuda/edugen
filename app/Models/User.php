@@ -116,6 +116,10 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
+        if ($this->id === 1) {
+            return true;
+        }
+
         $superAdminEmails = array_filter(array_map('trim', [
             'admin@edugen.id',
             'asrorulhuda@gmail.com',

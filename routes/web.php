@@ -106,11 +106,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/learning-outcomes', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'index'])->name('learning-outcomes.index');
         Route::get('/learning-outcomes/create', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'create'])->name('learning-outcomes.create');
         Route::post('/learning-outcomes', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'store'])->name('learning-outcomes.store');
-        Route::delete('/learning-outcomes/destroy-all', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'destroyAll'])->name('learning-outcomes.destroy-all');
+        Route::match(['delete', 'post'], '/learning-outcomes/destroy-all', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'destroyAll'])->name('learning-outcomes.destroy-all');
         Route::post('/learning-outcomes/publish-all', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'publishAll'])->name('learning-outcomes.publish-all');
         Route::get('/learning-outcomes/{learningOutcome}', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'show'])->name('learning-outcomes.show');
         Route::get('/learning-outcomes/{learningOutcome}/edit', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'edit'])->name('learning-outcomes.edit');
-        Route::put('/learning-outcomes/{learningOutcome}', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'update'])->name('learning-outcomes.update');
+        Route::match(['put', 'post'], '/learning-outcomes/{learningOutcome}', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'update'])->name('learning-outcomes.update');
+        Route::match(['delete', 'post'], '/learning-outcomes/{learningOutcome}', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'destroy'])->name('learning-outcomes.destroy');
         Route::post('/learning-outcomes/{learningOutcome}/publish', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'publish'])->name('learning-outcomes.publish');
         Route::post('/learning-outcomes/{learningOutcome}/archive', [\App\Http\Controllers\Admin\Curriculum\LearningOutcomeController::class, 'archive'])->name('learning-outcomes.archive');
 
@@ -123,11 +124,12 @@ Route::middleware('auth')->group(function () {
         // Curriculum & Subjects Dynamic Configuration
         Route::get('/config', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'index'])->name('curriculum-config.index');
         Route::post('/config/curriculum', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'storeCurriculum'])->name('curriculum-config.curriculum.store');
-        Route::put('/config/curriculum/{framework}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'updateCurriculum'])->name('curriculum-config.curriculum.update');
+        Route::match(['put', 'post'], '/config/curriculum/{framework}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'updateCurriculum'])->name('curriculum-config.curriculum.update');
         Route::post('/config/subject', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'storeSubject'])->name('curriculum-config.subject.store');
+        Route::match(['put', 'post'], '/config/subject/{subject}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'updateSubject'])->name('curriculum-config.subject.update');
         Route::post('/config/element', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'storeElement'])->name('curriculum-config.element.store');
-        Route::put('/config/element/{element}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'updateElement'])->name('curriculum-config.element.update');
-        Route::delete('/config/element/{element}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'destroyElement'])->name('curriculum-config.element.destroy');
+        Route::match(['put', 'post'], '/config/element/{element}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'updateElement'])->name('curriculum-config.element.update');
+        Route::match(['delete', 'post'], '/config/element/{element}', [\App\Http\Controllers\Admin\Curriculum\CurriculumConfigController::class, 'destroyElement'])->name('curriculum-config.element.destroy');
     });
 
     // Super Admin Landing Page CMS Management

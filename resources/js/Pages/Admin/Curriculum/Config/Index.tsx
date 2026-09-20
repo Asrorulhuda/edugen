@@ -183,7 +183,7 @@ export default function Index({ curricula, subjects, educationLevels }: Props) {
                 onSuccess: () => setCurriculumModal({ open: false, mode: 'create', item: null }),
             });
         } else if (curriculumModal.item) {
-            currForm.put(route('admin.curriculum-config.curriculum.update', curriculumModal.item.id), {
+            currForm.post(route('admin.curriculum-config.curriculum.update', curriculumModal.item.id), {
                 onSuccess: () => setCurriculumModal({ open: false, mode: 'edit', item: null }),
             });
         }
@@ -224,7 +224,7 @@ export default function Index({ curricula, subjects, educationLevels }: Props) {
                 onSuccess: () => setSubjectModal({ open: false, mode: 'create', item: null }),
             });
         } else if (subjectModal.item) {
-            subjForm.put(route('admin.curriculum-config.subject.update', subjectModal.item.id), {
+            subjForm.post(route('admin.curriculum-config.subject.update', subjectModal.item.id), {
                 onSuccess: () => setSubjectModal({ open: false, mode: 'edit', item: null }),
             });
         }
@@ -266,7 +266,7 @@ export default function Index({ curricula, subjects, educationLevels }: Props) {
                 },
             });
         } else if (elementModal.item) {
-            elemForm.put(route('admin.curriculum-config.element.update', elementModal.item.id), {
+            elemForm.post(route('admin.curriculum-config.element.update', elementModal.item.id), {
                 onSuccess: () => {
                     setElementModal({ open: false, mode: 'edit', subjectId: 0, item: null });
                     if (detailSubject) {
@@ -280,7 +280,7 @@ export default function Index({ curricula, subjects, educationLevels }: Props) {
 
     const handleDeleteElement = (element: LearningElementItem) => {
         if (confirm(`Apakah Anda yakin ingin menghapus elemen "${element.name}" (${element.code})?`)) {
-            router.delete(route('admin.curriculum-config.element.destroy', element.id), {
+            router.post(route('admin.curriculum-config.element.destroy', element.id), { _method: 'delete' }, {
                 onSuccess: () => {
                     if (detailSubject) {
                         const updated = subjects.find((s) => s.id === detailSubject.id);
