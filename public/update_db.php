@@ -272,6 +272,21 @@ if (!file_exists($rootDir . '/public/storage') && is_link($rootDir . '/public/st
 
 $totalDuration = round(microtime(true) - $startTime, 2);
 
+// Diagnostik Pengguna & Direktori Konflik
+$publicConflicts = [];
+if (file_exists($rootDir . '/public/admin')) $publicConflicts[] = 'Direktori public/admin fisik ditemukan di hosting!';
+if (file_exists($rootDir . '/public/crm')) $publicConflicts[] = 'Direktori public/crm fisik ditemukan di hosting!';
+
+$allUsers = \App\Models\User::with('memberships.role')->get()->map(function ($u) {
+    return [
+        'id' => $u->id,
+        'name' => $u->name,
+        'email' => $u->email,
+        'is_super_admin' => $u->isSuperAdmin(),
+        'roles' => $u->memberships->pluck('role.name')->filter()->values()->all(),
+    ];
+});
+
 // 8. Format Output Respons
 $response = [
     'status' => 'success',
@@ -280,6 +295,8 @@ $response = [
     'timestamp' => date('Y-m-d H:i:s') . ' WIB',
     'total_duration' => $totalDuration . 's',
     'tasks_executed' => count($logs),
+    'conflicts' => $publicConflicts,
+    'users' => $allUsers,
     'logs' => $logs,
 ];
 
