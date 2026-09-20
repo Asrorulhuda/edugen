@@ -90,7 +90,7 @@ export default function RubricsIndex({ rubrics, subjects, phases, filters }: Pro
 
     const handleDelete = (id: number, title: string) => {
         if (confirm(`Yakin ingin menghapus Rubrik "${title}"?`)) {
-            router.delete(route('curriculum.rubrics.destroy', id));
+            router.post(route('curriculum.rubrics.destroy', id), { _method: 'delete' });
         }
     };
 

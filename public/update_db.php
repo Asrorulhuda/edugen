@@ -11,6 +11,16 @@ define('LARAVEL_START', microtime(true));
 // 1. Deteksi Lingkungan (CLI atau Web HTTP)
 $isCli = (php_sapi_name() === 'cli' || empty($_SERVER['REMOTE_ADDR']));
 
+// Deployment updates must only run from the server CLI (the webhook invokes
+// this script through PHP CLI). Never expose migrations or user diagnostics
+// through a public browser endpoint.
+if (!$isCli) {
+    http_response_code(404);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['status' => 'error', 'message' => 'Not found.']);
+    exit;
+}
+
 // 2. Baca Root Folder & .env untuk Token Keamanan
 $rootDir = dirname(__DIR__);
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
@@ -19,7 +29,7 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     $rootDir = __DIR__;
 }
 
-$secretToken = 'edugen_deploy_secret_2026';
+$secretToken = '';
 if (file_exists($rootDir . '/.env')) {
     $envLines = @file($rootDir . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     if ($envLines) {
@@ -80,7 +90,7 @@ if (!$isCli) {
                 <form method="POST" action="update_db.php?format=html">
                     <div class="input-group">
                         <label for="token">Token Keamanan Deployment</label>
-                        <input type="text" id="token" name="token" value="edugen_deploy_secret_2026" required autofocus placeholder="Masukkan token rahasia">
+                        <input type="password" id="token" name="token" value="" required autofocus placeholder="Masukkan token rahasia">
                     </div>
                     <div class="input-group">
                         <label for="promote_email">Email Akun Anda (Otomatis Jadikan Super Admin)</label>
@@ -90,7 +100,7 @@ if (!$isCli) {
                 </form>
                 <div class="quick-link">
                     Atau gunakan URL langsung:<br>
-                    <a href="update_db.php?token=edugen_deploy_secret_2026&format=html">update_db.php?token=edugen_deploy_secret_2026</a>
+                    Endpoint pembaruan hanya tersedia melalui server CLI.
                 </div>
             </div>
         </body>
@@ -105,7 +115,7 @@ if (!$isCli) {
         echo json_encode([
             'status' => 'error',
             'message' => 'Unauthorized: Token keamanan tidak cocok.',
-            'tip' => 'Gunakan token default: edugen_deploy_secret_2026 atau atur DEPLOY_WEBHOOK_SECRET di .env.',
+            'tip' => 'Atur DEPLOY_WEBHOOK_SECRET di .env.',
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -332,7 +342,7 @@ $allUsers = \App\Models\User::with('memberships.role')->get()->map(function ($u)
 
 // 8. Format Output Respons
 $response = [
-    'status' => 'success',
+    'status' => collect($logs)->contains(fn (array $log) => ($log['exit_code'] ?? 1) !== 0) ? 'error' : 'success',
     'app_name' => config('app.name', 'EduGen'),
     'environment' => config('app.env'),
     'timestamp' => date('Y-m-d H:i:s') . ' WIB',
@@ -358,7 +368,7 @@ if ($isCli) {
         }
     }
     echo "\n>> Selesai! Database dan cache EduGen telah terbarui.\n";
-    exit(0);
+    exit($response['status'] === 'success' ? 0 : 1);
 }
 
 // Respon Web (HTML jika ?format=html atau form POST)
@@ -414,6 +424,7 @@ if ($isHtml) {
     exit;
 }
 
+http_response_code($response['status'] === 'success' ? 200 : 500);
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 exit;

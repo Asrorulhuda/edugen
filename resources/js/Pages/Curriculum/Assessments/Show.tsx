@@ -34,7 +34,7 @@ export default function AssessmentShow({ package: pkg, institution }: Props) {
 
     const handleDelete = () => {
         if (confirm(`Yakin ingin menghapus Paket Asesmen "${pkg.title}"?`)) {
-            router.delete(route('curriculum.assessments.destroy', pkg.id));
+            router.post(route('curriculum.assessments.destroy', pkg.id), { _method: 'delete' });
         }
     };
 

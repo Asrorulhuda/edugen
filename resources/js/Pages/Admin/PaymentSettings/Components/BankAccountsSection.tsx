@@ -78,7 +78,7 @@ export default function BankAccountsSection({ bankAccounts }: Props) {
 
     const handleDelete = (acc: BankAccount) => {
         if (confirm(`Hapus rekening ${acc.bank_name} (${acc.account_number})?`)) {
-            router.delete(route('admin.payment-settings.banks.destroy', acc.id), {
+            router.post(route('admin.payment-settings.banks.destroy', acc.id), { _method: 'delete' }, {
                 preserveScroll: true,
             });
         }

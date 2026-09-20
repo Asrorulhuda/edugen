@@ -74,7 +74,7 @@ interface Props {
 export default function AtpShow({ sequence, institution }: Props) {
     const handleDelete = () => {
         if (confirm(`Yakin ingin menghapus dokumen ATP "${sequence.title}"?`)) {
-            router.delete(route('curriculum.atp.destroy', sequence.id));
+            router.post(route('curriculum.atp.destroy', sequence.id), { _method: 'delete' });
         }
     };
 

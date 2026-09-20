@@ -66,7 +66,7 @@ export default function AcademicYears({ academicYears }: Props) {
 
     const handleDeleteYear = (id: number, label: string) => {
         if (confirm(`Yakin ingin menghapus tahun ajaran ${label}? Tindakan ini tidak dapat dibatalkan.`)) {
-            router.delete(route('institution.academic-years.destroy', id));
+            router.post(route('institution.academic-years.destroy', id), { _method: 'delete' });
         }
     };
 

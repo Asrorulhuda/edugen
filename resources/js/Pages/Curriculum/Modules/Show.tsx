@@ -118,7 +118,7 @@ export default function ModulesShow({ module, goals, institution, learningOutcom
 
     const handleDelete = () => {
         if (confirm(`Yakin ingin menghapus Modul Ajar "${module.title}"?`)) {
-            router.delete(route('curriculum.modules.destroy', module.id));
+            router.post(route('curriculum.modules.destroy', module.id), { _method: 'delete' });
         }
     };
 

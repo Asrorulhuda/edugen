@@ -77,7 +77,7 @@ export default function Invitations({ invitations }: Props) {
 
     const handleRevoke = (id: number, email: string) => {
         if (confirm(`Batalkan undangan untuk ${email}? Tautan dan kode OTP tidak akan bisa digunakan lagi.`)) {
-            router.delete(route('institution.invitations.destroy', id));
+            router.post(route('institution.invitations.destroy', id), { _method: 'delete' });
         }
     };
 

@@ -86,7 +86,7 @@ export default function AtpIndex({ sequences, subjects, phases, filters }: Props
 
     const handleDelete = (id: number, title: string) => {
         if (confirm(`Yakin ingin menghapus dokumen ATP "${title}"?`)) {
-            router.delete(route('curriculum.atp.destroy', id));
+            router.post(route('curriculum.atp.destroy', id), { _method: 'delete' });
         }
     };
 

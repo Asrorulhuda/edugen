@@ -89,8 +89,10 @@ export default function Index({
         if (confirmText !== 'HAPUS') return;
 
         setIsDeleting(true);
-        router.delete(route('admin.learning-outcomes.destroy-all'), {
-            data: { curriculum_code: deleteScope },
+        router.post(route('admin.learning-outcomes.destroy-all'), {
+            _method: 'delete',
+            curriculum_code: deleteScope,
+        }, {
             onFinish: () => {
                 setIsDeleting(false);
                 setIsDeleteAllOpen(false);

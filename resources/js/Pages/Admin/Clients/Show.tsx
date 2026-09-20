@@ -70,7 +70,8 @@ export default function Show({
 
     const handleStatusChange = (newStatus: string) => {
         if (confirm(`Ubah status client menjadi ${newStatus}?`)) {
-            router.patch(route('admin.clients.update-status', client.id), {
+            router.post(route('admin.clients.update-status', client.id), {
+                _method: 'patch',
                 status: newStatus,
             }, { preserveScroll: true });
         }
@@ -110,7 +111,7 @@ export default function Show({
                 `PERINGATAN KERAS: Apakah Anda yakin ingin menghapus permanen client "${client.name}"?\n\nSeluruh perangkat ajar, bank soal, akun guru, dan riwayat pesanan/langganan akan dihapus selamanya dari database.`
             )
         ) {
-            router.delete(route('admin.clients.destroy', client.id));
+            router.post(route('admin.clients.destroy', client.id), { _method: 'delete' });
         }
     };
 

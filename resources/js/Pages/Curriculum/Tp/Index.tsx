@@ -86,7 +86,7 @@ export default function TpIndex({ goals, subjects, phases, filters }: Props) {
 
     const handleDelete = (id: number, code: string) => {
         if (confirm(`Yakin ingin menghapus Tujuan Pembelajaran ${code}?`)) {
-            router.delete(route('curriculum.tp.destroy', id));
+            router.post(route('curriculum.tp.destroy', id), { _method: 'delete' });
         }
     };
 

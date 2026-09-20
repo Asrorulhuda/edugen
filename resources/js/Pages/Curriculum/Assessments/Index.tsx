@@ -101,7 +101,7 @@ export default function AssessmentIndex({ packages, subjects, phases, filters }:
 
     const handleDelete = (id: number, title: string) => {
         if (confirm(`Yakin ingin menghapus Paket Asesmen "${title}"?`)) {
-            router.delete(route('curriculum.assessments.destroy', id));
+            router.post(route('curriculum.assessments.destroy', id), { _method: 'delete' });
         }
     };
 

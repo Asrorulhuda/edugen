@@ -92,7 +92,7 @@ export default function ModulesIndex({ modules, subjects, phases, filters }: Pro
 
     const handleDelete = (id: number, title: string) => {
         if (confirm(`Yakin ingin menghapus Modul Ajar "${title}"?`)) {
-            router.delete(route('curriculum.modules.destroy', id));
+            router.post(route('curriculum.modules.destroy', id), { _method: 'delete' });
         }
     };
 

@@ -80,7 +80,7 @@ export default function RubricShow({ rubric, institution }: Props) {
 
     const handleDelete = () => {
         if (confirm(`Yakin ingin menghapus Rubrik "${rubric.title}"?`)) {
-            router.delete(route('curriculum.rubrics.destroy', rubric.id));
+            router.post(route('curriculum.rubrics.destroy', rubric.id), { _method: 'delete' });
         }
     };
 

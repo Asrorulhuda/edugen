@@ -24,14 +24,14 @@ export default function PlanCard({ plan, onEdit }: PlanCardProps) {
     const isInstitution = plan.client_model === 'INSTITUTION';
 
     const handleToggleStatus = () => {
-        router.patch(route('admin.plans.toggle-status', plan.id), {}, {
+        router.post(route('admin.plans.toggle-status', plan.id), { _method: 'patch' }, {
             preserveScroll: true,
         });
     };
 
     const handleDelete = () => {
         if (confirm(`Apakah Anda yakin ingin menghapus paket "${plan.name}"?`)) {
-            router.delete(route('admin.plans.destroy', plan.id), {
+            router.post(route('admin.plans.destroy', plan.id), { _method: 'delete' }, {
                 preserveScroll: true,
             });
         }

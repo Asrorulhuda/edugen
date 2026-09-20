@@ -86,7 +86,7 @@ export default function TemplateManagerModal({
     const handleDelete = (template: WaTemplate) => {
         if (template.is_system) return;
         if (confirm(`Yakin ingin menghapus template "${template.title}"?`)) {
-            router.delete(route('admin.crm.templates.destroy', template.id), {
+            router.post(route('admin.crm.templates.destroy', template.id), { _method: 'delete' }, {
                 preserveScroll: true,
             });
         }
