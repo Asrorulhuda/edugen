@@ -22,6 +22,64 @@ Aturan ini berlaku untuk seluruh repository. Aplikasi sudah production di
   perubahan.
 - Push/deploy hanya ketika pengguna meminta deployment atau push secara jelas.
 
+## Kualitas kode dan batas ukuran file
+
+- File source yang dipelihara manual tidak boleh melebihi 500 baris. Targetkan
+  ukuran yang lebih kecil dan satu tanggung jawab utama per file.
+- Sebelum menambah kode ke file yang sudah besar, hitung jumlah barisnya. Jika
+  perubahan membuatnya melewati 500 baris, pecah terlebih dahulu menjadi
+  component, service, action, hook, utility, request, atau class yang memiliki
+  batas tanggung jawab jelas.
+- Batas 500 baris tidak berlaku untuk file generated atau machine-managed,
+  seperti `public/build/**`, `vendor/**`, `node_modules/**`, lockfile, cache,
+  snapshot, dan hasil generator yang tidak seharusnya diedit manual.
+- Jangan menumpuk implementasi baru di atas implementasi lama. Saat mengganti
+  perilaku, hapus kode lama, import lama, route lama, flag sementara, komentar
+  usang, dan test yang hanya menguji perilaku yang sudah dihapus.
+- Jangan mempertahankan dua component/service/function yang melakukan pekerjaan
+  sama hanya untuk berjaga-jaga. Gunakan satu implementasi yang menjadi sumber
+  kebenaran, kecuali kompatibilitas lama memang masih menjadi requirement aktif.
+- Sebelum membuat file atau abstraction baru, cari implementasi yang sudah ada.
+  Perbaiki atau ekstrak kode tersebut bila masih sesuai; jangan membuat versi
+  duplikat dengan nama berbeda.
+- Refactor harus mengganti struktur lama, bukan sekadar membungkusnya sambil
+  membiarkan alur lama tetap aktif. Setelah refactor, cari referensi lama dan
+  pastikan tidak ada dead code yang tertinggal.
+
+### Larangan AI slop
+
+Agent harus menghasilkan kode yang ringkas, spesifik terhadap kebutuhan, dan
+konsisten dengan pola repository. Jangan menghasilkan:
+
+- komentar yang hanya mengulang isi kode;
+- abstraction, wrapper, interface, helper, atau konfigurasi yang hanya dipakai
+  sekali tanpa manfaat nyata;
+- fallback berlapis, kondisi defensif spekulatif, atau `try/catch` luas yang
+  menyembunyikan error;
+- placeholder, TODO, mock, fake data, atau fitur tambahan yang tidak diminta;
+- duplikasi blok kode, variasi component yang hampir sama, dan CSS class yang
+  saling bertumpuk;
+- nama generik seperti `handleStuff`, `dataHelper`, atau `tempManager`;
+- penggunaan `any`, suppression lint/type, atau casting paksa hanya untuk
+  melewati pemeriksaan;
+- dokumentasi panjang untuk perilaku sederhana ketika nama dan struktur kode
+  sudah dapat menjelaskannya.
+
+Setiap perubahan harus menjadi solusi minimum yang lengkap: tidak ada kode
+cadangan spekulatif, tetapi tetap menangani error yang nyata dan teruji.
+
+### Pemeriksaan kebersihan perubahan
+
+Sebelum commit, agent wajib:
+
+1. Memeriksa jumlah baris semua file source yang diubah.
+2. Mencari import, symbol, route, component, dan file lama yang tidak lagi
+   direferensikan.
+3. Menghapus kode lama yang telah digantikan dan memperbarui semua pemanggilnya.
+4. Menjalankan formatter, type-check, lint, build, dan test yang relevan.
+5. Membaca diff akhir untuk memastikan perubahan tidak berisi duplikasi,
+   scaffolding berlebih, atau perubahan di luar kebutuhan.
+
 ## Klasifikasi perubahan sebelum deploy
 
 Agent wajib menentukan salah satu kategori berikut.
