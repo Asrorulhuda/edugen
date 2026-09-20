@@ -66,7 +66,7 @@ export default function TemplateManagerModal({
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingTemplate) {
-            form.put(route('admin.crm.templates.update', editingTemplate.id), {
+            form.post(route('admin.crm.templates.update', editingTemplate.id), {
                 preserveScroll: true,
                 onSuccess: () => {
                     setEditingTemplate(null);

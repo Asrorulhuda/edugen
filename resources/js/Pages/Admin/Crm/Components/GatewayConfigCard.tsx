@@ -40,7 +40,7 @@ export default function GatewayConfigCard({ setting }: GatewayConfigCardProps) {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        form.put(route('admin.crm.settings.update'), {
+        form.post(route('admin.crm.settings.update'), {
             preserveScroll: true,
         });
     };

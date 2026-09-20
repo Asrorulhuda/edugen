@@ -211,12 +211,12 @@ Route::middleware('auth')->group(function () {
     // Super Admin CRM & WhatsApp Gateway
     Route::middleware('superadmin')->prefix('admin/crm')->name('admin.crm.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'index'])->name('index');
-        Route::put('/settings', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'updateSettings'])->name('settings.update');
+        Route::match(['put', 'post'], '/settings', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'updateSettings'])->name('settings.update');
         Route::post('/test-connection', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'testConnection'])->name('test');
         Route::post('/send', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'sendMessage'])->name('send');
         Route::post('/broadcast', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'broadcast'])->name('broadcast');
         Route::post('/templates', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'storeTemplate'])->name('templates.store');
-        Route::put('/templates/{template}', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'updateTemplate'])->name('templates.update');
+        Route::match(['put', 'post'], '/templates/{template}', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'updateTemplate'])->name('templates.update');
         Route::delete('/templates/{template}', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'destroyTemplate'])->name('templates.destroy');
         Route::post('/logs/{log}/retry', [\App\Http\Controllers\Admin\Crm\AdminWhatsAppController::class, 'retryLog'])->name('logs.retry');
     });
