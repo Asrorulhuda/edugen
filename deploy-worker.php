@@ -143,6 +143,21 @@ if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
 
 $phpBinary = envValue($projectDir . '/.env', 'DEPLOY_PHP_BINARY') ?: 'php';
 $composerBinary = envValue($projectDir . '/.env', 'DEPLOY_COMPOSER_BINARY') ?: 'composer';
+$composerHome = envValue($projectDir . '/.env', 'DEPLOY_COMPOSER_HOME')
+    ?: $queueDir . '/composer-home';
+if (!is_dir($composerHome) && !mkdir($composerHome, 0750, true) && !is_dir($composerHome)) {
+    deployLog($logFile, 'worker_error', ['message' => 'Unable to create Composer home directory.']);
+    flock($lockHandle, LOCK_UN);
+    fclose($lockHandle);
+    exit(1);
+}
+
+// Web-server background processes commonly have no HOME. Composer only needs
+// its own writable home directory, so keep it isolated inside deployment data.
+putenv('COMPOSER_HOME=' . $composerHome);
+$_ENV['COMPOSER_HOME'] = $composerHome;
+$_SERVER['COMPOSER_HOME'] = $composerHome;
+
 $php = escapeshellarg($phpBinary);
 $composer = escapeshellarg($composerBinary);
 $processed = 0;
