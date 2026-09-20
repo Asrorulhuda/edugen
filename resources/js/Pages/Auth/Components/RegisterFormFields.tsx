@@ -1,26 +1,53 @@
-import React from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import { User, Mail, Smartphone, Lock, Eye, EyeOff, ShieldCheck, Check, ArrowRight, LoaderCircle } from 'lucide-react';
+import {
+    ArrowRight,
+    Check,
+    Eye,
+    EyeOff,
+    LoaderCircle,
+    Lock,
+    Mail,
+    ShieldCheck,
+    Smartphone,
+    User,
+} from 'lucide-react';
+import { FormEvent } from 'react';
+
+export interface RegisterFormData {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    password_confirmation: string;
+}
+
+export type RegisterField = keyof RegisterFormData;
 
 interface RegisterFormFieldsProps {
-    data: {
-        name: string;
-        email: string;
-        phone: string;
-        password: string;
-        password_confirmation: string;
-    };
-    setData: (key: any, value: any) => void;
+    data: RegisterFormData;
+    setData: (key: RegisterField, value: string) => void;
     errors: Record<string, string>;
     processing: boolean;
-    onSubmit: (e: React.FormEvent) => void;
-    onFocusField: (field: string) => void;
+    onSubmit: (event: FormEvent) => void;
+    onFocusField: (field: RegisterField) => void;
     onBlurField: () => void;
     showPassword: boolean;
     setShowPassword: (show: boolean) => void;
     showPasswordConfirm: boolean;
     setShowPasswordConfirm: (show: boolean) => void;
+}
+
+const inputClass =
+    'w-full rounded-2xl border border-slate-200 bg-slate-50/80 py-3 pl-10 pr-4 text-xs text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-800/70 dark:text-white dark:hover:border-slate-600 dark:focus:border-emerald-500 dark:focus:bg-slate-900';
+
+function passwordStrength(password: string): number {
+    if (!password) return 0;
+    return [
+        password.length >= 8,
+        /[A-Z]/.test(password) || /[0-9]/.test(password),
+        /[^A-Za-z0-9]/.test(password) && password.length >= 10,
+    ].filter(Boolean).length;
 }
 
 export default function RegisterFormFields({
@@ -36,217 +63,268 @@ export default function RegisterFormFields({
     showPasswordConfirm,
     setShowPasswordConfirm,
 }: RegisterFormFieldsProps) {
-    // Password strength logic
-    const calculateStrength = (pwd: string) => {
-        let score = 0;
-        if (pwd.length >= 8) score++;
-        if (/[A-Z]/.test(pwd) || /[0-9]/.test(pwd)) score++;
-        if (/[^A-Za-z0-9]/.test(pwd) && pwd.length >= 10) score++;
-        return score; // 0, 1, 2, 3
-    };
-
-    const strength = calculateStrength(data.password);
-    const strengthLabels = ['Belum memadai', 'Cukup aman', 'Kuat & Aman', 'Sangat Kuat'];
-    const strengthColors = ['bg-slate-200 dark:bg-slate-700', 'bg-amber-500', 'bg-emerald-500', 'bg-teal-500'];
+    const strength = passwordStrength(data.password);
+    const strengthLabel = [
+        'Masukkan kata sandi',
+        'Cukup',
+        'Kuat',
+        'Sangat kuat',
+    ][strength];
+    const passwordsMatch =
+        data.password_confirmation.length > 0 &&
+        data.password === data.password_confirmation;
 
     return (
-        <form onSubmit={onSubmit} className="space-y-3.5 animate-fadeIn">
-            {/* Name Field */}
-            <div>
-                <InputLabel htmlFor="name" value="Nama Lengkap & Gelar" className="text-xs font-bold text-slate-700 dark:text-slate-200" />
-                <div className="relative mt-1 rounded-2xl shadow-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <User className="w-4 h-4" />
+        <form onSubmit={onSubmit} className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <InputLabel
+                        htmlFor="name"
+                        value="Nama lengkap & gelar"
+                        className="text-xs font-bold text-slate-700 dark:text-slate-200"
+                    />
+                    <div className="group relative mt-1.5">
+                        <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-500" />
+                        <input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            placeholder="Ahmad Baihaqi, S.Pd."
+                            className={inputClass}
+                            autoComplete="name"
+                            autoFocus
+                            onFocus={() => onFocusField('name')}
+                            onBlur={onBlurField}
+                            onChange={(event) =>
+                                setData('name', event.target.value)
+                            }
+                            required
+                        />
                     </div>
-                    <input
-                        id="name"
-                        type="text"
-                        name="name"
-                        value={data.name}
-                        placeholder="Contoh: Ahmad Baihaqi, S.Pd., M.Pd."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                        autoComplete="name"
-                        autoFocus
-                        onFocus={() => onFocusField('name')}
-                        onBlur={onBlurField}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
+                    <InputError
+                        message={errors.name}
+                        className="mt-1.5 text-xs text-rose-500"
                     />
                 </div>
-                <InputError message={errors.name} className="mt-1 text-xs text-rose-500" />
-            </div>
 
-            {/* Email Field */}
-            <div>
-                <InputLabel htmlFor="email" value="Alamat Email" className="text-xs font-bold text-slate-700 dark:text-slate-200" />
-                <div className="relative mt-1 rounded-2xl shadow-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <Mail className="w-4 h-4" />
+                <div>
+                    <InputLabel
+                        htmlFor="email"
+                        value="Alamat email"
+                        className="text-xs font-bold text-slate-700 dark:text-slate-200"
+                    />
+                    <div className="group relative mt-1.5">
+                        <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-500" />
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            placeholder="guru@sekolah.sch.id"
+                            className={inputClass}
+                            autoComplete="email"
+                            onFocus={() => onFocusField('email')}
+                            onBlur={onBlurField}
+                            onChange={(event) =>
+                                setData('email', event.target.value)
+                            }
+                            required
+                        />
                     </div>
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        placeholder="nama@madrasah.sch.id / guru@gmail.com"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                        autoComplete="username"
-                        onFocus={() => onFocusField('email')}
-                        onBlur={onBlurField}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
+                    <InputError
+                        message={errors.email}
+                        className="mt-1.5 text-xs text-rose-500"
                     />
                 </div>
-                <InputError message={errors.email} className="mt-1 text-xs text-rose-500" />
             </div>
 
-            {/* WhatsApp Phone Number Field */}
             <div>
-                <div className="flex items-center justify-between">
-                    <InputLabel htmlFor="phone" value="Nomor WhatsApp Aktif" className="text-xs font-bold text-slate-700 dark:text-slate-200" />
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                        Kirim OTP WhatsApp
+                <div className="flex items-center justify-between gap-3">
+                    <InputLabel
+                        htmlFor="phone"
+                        value="Nomor WhatsApp aktif"
+                        className="text-xs font-bold text-slate-700 dark:text-slate-200"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        Tujuan kode OTP
                     </span>
                 </div>
-                <div className="relative mt-1 rounded-2xl shadow-xs flex items-center">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <Smartphone className="w-4 h-4 text-emerald-500" />
-                    </div>
+                <div className="group relative mt-1.5">
+                    <Smartphone className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
                     <input
                         id="phone"
                         type="tel"
                         name="phone"
                         value={data.phone}
-                        placeholder="081234567890 / 62812..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition font-mono"
+                        placeholder="081234567890"
+                        className={`${inputClass} font-mono`}
                         autoComplete="tel"
+                        inputMode="tel"
                         onFocus={() => onFocusField('phone')}
                         onBlur={onBlurField}
-                        onChange={(e) => setData('phone', e.target.value.replace(/[^0-9+]/g, ''))}
+                        onChange={(event) =>
+                            setData(
+                                'phone',
+                                event.target.value.replace(/[^0-9+]/g, ''),
+                            )
+                        }
                         required
                     />
                 </div>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-                    Kode verifikasi OTP 6-digit akan dikirimkan otomatis ke nomor WhatsApp ini.
-                </p>
-                <InputError message={errors.phone} className="mt-1 text-xs text-rose-500" />
+                <InputError
+                    message={errors.phone}
+                    className="mt-1.5 text-xs text-rose-500"
+                />
             </div>
 
-            {/* Password Field */}
-            <div>
-                <InputLabel htmlFor="password" value="Kata Sandi Baru" className="text-xs font-bold text-slate-700 dark:text-slate-200" />
-                <div className="relative mt-1 rounded-2xl shadow-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <Lock className="w-4 h-4" />
-                    </div>
-                    <input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        value={data.password}
-                        placeholder="Minimal 8 karakter"
-                        className="w-full pl-10 pr-11 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                        autoComplete="new-password"
-                        onFocus={() => onFocusField('password')}
-                        onBlur={onBlurField}
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
+            <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <InputLabel
+                        htmlFor="password"
+                        value="Kata sandi"
+                        className="text-xs font-bold text-slate-700 dark:text-slate-200"
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-                        title={showPassword ? 'Sembunyikan sandi' : 'Tampilkan sandi'}
-                    >
-                        {showPassword ? <EyeOff className="w-4 h-4 text-emerald-600" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                    <div className="group relative mt-1.5">
+                        <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-500" />
+                        <input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            value={data.password}
+                            placeholder="Minimal 8 karakter"
+                            className={`${inputClass} pr-11`}
+                            autoComplete="new-password"
+                            onFocus={() => onFocusField('password')}
+                            onBlur={onBlurField}
+                            onChange={(event) =>
+                                setData('password', event.target.value)
+                            }
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 transition hover:text-emerald-600"
+                            aria-label={
+                                showPassword
+                                    ? 'Sembunyikan kata sandi'
+                                    : 'Tampilkan kata sandi'
+                            }
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                            ) : (
+                                <Eye className="h-4 w-4" />
+                            )}
+                        </button>
+                    </div>
+                    <InputError
+                        message={errors.password}
+                        className="mt-1.5 text-xs text-rose-500"
+                    />
                 </div>
 
-                {/* Password Strength Indicator */}
-                {data.password.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                        <div className="flex gap-1 h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div className={`h-full flex-1 transition-all ${strength >= 1 ? strengthColors[strength] : 'bg-slate-200 dark:bg-slate-700'}`} />
-                            <div className={`h-full flex-1 transition-all ${strength >= 2 ? strengthColors[strength] : 'bg-slate-200 dark:bg-slate-700'}`} />
-                            <div className={`h-full flex-1 transition-all ${strength >= 3 ? strengthColors[strength] : 'bg-slate-200 dark:bg-slate-700'}`} />
-                        </div>
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
-                            <span>Kekuatan sandi: <strong className="text-slate-700 dark:text-slate-200">{strengthLabels[strength]}</strong></span>
-                            <span className={data.password.length >= 8 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : ''}>
-                                {data.password.length}/8 karakter
-                            </span>
-                        </div>
+                <div>
+                    <InputLabel
+                        htmlFor="password_confirmation"
+                        value="Konfirmasi kata sandi"
+                        className="text-xs font-bold text-slate-700 dark:text-slate-200"
+                    />
+                    <div className="group relative mt-1.5">
+                        <ShieldCheck className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition group-focus-within:text-emerald-500" />
+                        <input
+                            id="password_confirmation"
+                            type={showPasswordConfirm ? 'text' : 'password'}
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            placeholder="Ulangi kata sandi"
+                            className={`${inputClass} pr-11`}
+                            autoComplete="new-password"
+                            onFocus={() =>
+                                onFocusField('password_confirmation')
+                            }
+                            onBlur={onBlurField}
+                            onChange={(event) =>
+                                setData(
+                                    'password_confirmation',
+                                    event.target.value,
+                                )
+                            }
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowPasswordConfirm(!showPasswordConfirm)
+                            }
+                            className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 transition hover:text-emerald-600"
+                            aria-label={
+                                showPasswordConfirm
+                                    ? 'Sembunyikan konfirmasi kata sandi'
+                                    : 'Tampilkan konfirmasi kata sandi'
+                            }
+                        >
+                            {showPasswordConfirm ? (
+                                <EyeOff className="h-4 w-4" />
+                            ) : (
+                                <Eye className="h-4 w-4" />
+                            )}
+                        </button>
                     </div>
-                )}
-                <InputError message={errors.password} className="mt-1 text-xs text-rose-500" />
+                    <InputError
+                        message={errors.password_confirmation}
+                        className="mt-1.5 text-xs text-rose-500"
+                    />
+                </div>
             </div>
 
-            {/* Confirm Password Field */}
-            <div>
-                <InputLabel htmlFor="password_confirmation" value="Konfirmasi Kata Sandi" className="text-xs font-bold text-slate-700 dark:text-slate-200" />
-                <div className="relative mt-1 rounded-2xl shadow-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <ShieldCheck className="w-4 h-4" />
-                    </div>
-                    <input
-                        id="password_confirmation"
-                        type={showPasswordConfirm ? 'text' : 'password'}
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        placeholder="Ulangi kata sandi di atas"
-                        className="w-full pl-10 pr-11 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                        autoComplete="new-password"
-                        onFocus={() => onFocusField('password')}
-                        onBlur={onBlurField}
-                        onChange={(e) => setData('password_confirmation', e.target.value)}
-                        required
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-                        title={showPasswordConfirm ? 'Sembunyikan konfirmasi' : 'Tampilkan konfirmasi'}
-                    >
-                        {showPasswordConfirm ? <EyeOff className="w-4 h-4 text-emerald-600" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                </div>
-
-                {data.password_confirmation && (
-                    <div className="mt-1 flex items-center gap-1.5 text-[11px]">
-                        {data.password === data.password_confirmation ? (
-                            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">
-                                <Check className="w-3.5 h-3.5" /> Kata sandi cocok
-                            </span>
-                        ) : (
-                            <span className="text-rose-500 font-medium">
-                                Kata sandi belum sama
+            {data.password && (
+                <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+                    <div className="flex items-center justify-between gap-3 text-[11px]">
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">
+                            Kekuatan sandi: {strengthLabel}
+                        </span>
+                        {data.password_confirmation && (
+                            <span
+                                className={`inline-flex items-center gap-1 font-bold ${passwordsMatch ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}
+                            >
+                                {passwordsMatch && (
+                                    <Check className="h-3.5 w-3.5" />
+                                )}
+                                {passwordsMatch ? 'Cocok' : 'Belum cocok'}
                             </span>
                         )}
                     </div>
-                )}
-                <InputError message={errors.password_confirmation} className="mt-1 text-xs text-rose-500" />
-            </div>
+                    <div className="mt-2 grid grid-cols-3 gap-1.5">
+                        {[1, 2, 3].map((level) => (
+                            <span
+                                key={level}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${strength >= level ? 'bg-gradient-to-r from-emerald-500 to-teal-400' : 'bg-slate-200 dark:bg-slate-700'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
 
-            {/* Submit Button */}
-            <div className="pt-2">
-                <button
-                    type="submit"
-                    disabled={processing}
-                    className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition btn-tactile disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
-                >
+            <button
+                type="submit"
+                disabled={processing}
+                className="auth-submit btn-tactile relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 py-3.5 text-xs font-black text-white shadow-lg shadow-emerald-600/25 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <span className="relative z-10 flex items-center justify-center gap-2">
                     {processing ? (
                         <>
-                            <LoaderCircle className="w-4 h-4 animate-spin" />
-                            <span>Memproses Kode OTP...</span>
+                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                            Mengirim kode OTP...
                         </>
                     ) : (
                         <>
-                            <span>Lanjut ke Verifikasi OTP</span>
-                            <ArrowRight className="w-4 h-4" />
+                            Buat akun & verifikasi
+                            <ArrowRight className="h-4 w-4" />
                         </>
                     )}
-                </button>
-            </div>
+                </span>
+            </button>
         </form>
     );
 }

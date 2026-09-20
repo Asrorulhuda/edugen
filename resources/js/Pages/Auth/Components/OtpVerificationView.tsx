@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Smartphone, RefreshCw, ArrowLeft, CheckCircle2, AlertCircle, LoaderCircle, ShieldCheck, KeyRound } from 'lucide-react';
+import {
+    AlertCircle,
+    ArrowLeft,
+    CheckCircle2,
+    LoaderCircle,
+    RefreshCw,
+    Smartphone,
+} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface OtpVerificationViewProps {
     phone: string;
-    displayPhone: string;
-    token: string;
     devOtp?: string | null;
     onVerify: (otp: string) => void;
     onResend: () => Promise<boolean>;
@@ -15,8 +20,6 @@ interface OtpVerificationViewProps {
 
 export default function OtpVerificationView({
     phone,
-    displayPhone,
-    token,
     devOtp,
     onVerify,
     onResend,
@@ -79,7 +82,10 @@ export default function OtpVerificationView({
         }
     };
 
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (
+        index: number,
+        e: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
         }
@@ -87,7 +93,10 @@ export default function OtpVerificationView({
 
     const handlePaste = (e: React.ClipboardEvent) => {
         e.preventDefault();
-        const pasted = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+        const pasted = e.clipboardData
+            .getData('text')
+            .replace(/[^0-9]/g, '')
+            .slice(0, 6);
         if (!pasted) return;
 
         const next = [...otp];
@@ -125,27 +134,27 @@ export default function OtpVerificationView({
     };
 
     return (
-        <div className="space-y-5 animate-fadeIn">
+        <div className="space-y-5">
             {/* Header Status Card */}
-            <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 space-y-2 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-600/15 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-xs">
-                    <Smartphone className="w-6 h-6 animate-pulse" />
+            <div className="space-y-2 rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-4 text-center dark:border-emerald-800/80 dark:bg-emerald-950/40">
+                <div className="shadow-xs mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600/15 text-emerald-600 dark:text-emerald-400">
+                    <Smartphone className="h-6 w-6 animate-pulse" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     Verifikasi WhatsApp Anda
                 </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-xs mx-auto">
+                <p className="mx-auto max-w-xs text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                     Kode verifikasi 6-digit telah dikirimkan ke nomor WhatsApp:
                 </p>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">
+                <div className="shadow-2xs inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-white px-3 py-1 font-mono text-xs font-bold text-emerald-700 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-300">
                     <span>+{phone}</span>
                 </div>
             </div>
 
             {/* Sandbox Developer OTP Quick Pill */}
             {devOtp && (
-                <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center">
-                    <span className="text-[11px] text-amber-800 dark:text-amber-300 font-medium">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-center dark:border-amber-800 dark:bg-amber-950/40">
+                    <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300">
                         🛠️ Mode Uji Coba: Kode OTP Anda adalah{' '}
                         <button
                             type="button"
@@ -154,7 +163,7 @@ export default function OtpVerificationView({
                                 setOtp(digits);
                                 onVerify(devOtp);
                             }}
-                            className="font-mono font-black text-amber-900 dark:text-amber-200 underline hover:text-amber-700"
+                            className="font-mono font-black text-amber-900 underline hover:text-amber-700 dark:text-amber-200"
                         >
                             {devOtp} (Klik untuk isi)
                         </button>
@@ -164,32 +173,37 @@ export default function OtpVerificationView({
 
             {/* 6 Digit Input Boxes */}
             <form onSubmit={handleSubmit} className="space-y-5">
-                <div className={`flex items-center justify-center gap-2 sm:gap-2.5 ${hasError ? 'animate-shake' : ''}`}>
+                <div
+                    className={`flex items-center justify-center gap-2 sm:gap-2.5 ${hasError ? 'animate-shake' : ''}`}
+                >
                     {otp.map((digit, index) => (
                         <input
                             key={index}
-                            ref={(el) => { inputRefs.current[index] = el; }}
+                            ref={(el) => {
+                                inputRefs.current[index] = el;
+                            }}
                             type="text"
                             inputMode="numeric"
                             pattern="[0-9]*"
                             maxLength={1}
                             value={digit}
-                            onChange={(e) => handleDigitChange(index, e.target.value)}
+                            onChange={(e) =>
+                                handleDigitChange(index, e.target.value)
+                            }
                             onKeyDown={(e) => handleKeyDown(index, e)}
                             onPaste={handlePaste}
-                            className={`w-11 h-13 sm:w-12 sm:h-14 text-center font-mono text-xl sm:text-2xl font-black rounded-2xl border transition-all duration-150 select-none shadow-xs
-                                ${digit
-                                    ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 scale-102'
-                                    : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'
-                                }
-                                focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 focus:scale-105`}
+                            className={`h-13 shadow-xs w-11 select-none rounded-2xl border text-center font-mono text-xl font-black transition-all duration-150 sm:h-14 sm:w-12 sm:text-2xl ${
+                                digit
+                                    ? 'scale-102 border-emerald-500 bg-emerald-50/40 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300'
+                                    : 'border-slate-300 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+                            } focus:scale-105 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/20`}
                         />
                     ))}
                 </div>
 
                 {error && (
-                    <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/80 flex items-center justify-center gap-2 text-xs font-semibold text-rose-600 dark:text-rose-400 animate-fadeIn">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
+                    <div className="animate-fade-in flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-600 dark:border-rose-800/80 dark:bg-rose-950/30 dark:text-rose-400">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
                         <span>{error}</span>
                     </div>
                 )}
@@ -198,16 +212,16 @@ export default function OtpVerificationView({
                 <button
                     type="submit"
                     disabled={processing || otp.join('').length < 6}
-                    className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition btn-tactile disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                    className="btn-tactile flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 active:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {processing ? (
                         <>
-                            <LoaderCircle className="w-4 h-4 animate-spin" />
+                            <LoaderCircle className="h-4 w-4 animate-spin" />
                             <span>Memverifikasi Akun Anda...</span>
                         </>
                     ) : (
                         <>
-                            <CheckCircle2 className="w-4 h-4" />
+                            <CheckCircle2 className="h-4 w-4" />
                             <span>Konfirmasi & Masuk EduGen</span>
                         </>
                     )}
@@ -215,32 +229,37 @@ export default function OtpVerificationView({
             </form>
 
             {/* Resend & Edit Number Action Footer */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-4 text-xs sm:flex-row dark:border-slate-800">
                 {/* Back to Edit Phone */}
                 <button
                     type="button"
                     onClick={onChangePhone}
                     disabled={processing}
-                    className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold transition"
+                    className="inline-flex items-center gap-1.5 font-semibold text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                 >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="h-3.5 w-3.5" />
                     <span>Ubah Nomor WhatsApp</span>
                 </button>
 
                 {/* Resend OTP */}
                 <div>
                     {countdown > 0 ? (
-                        <span className="text-slate-400 font-medium">
-                            Kirim ulang dalam <strong className="text-emerald-600 dark:text-emerald-400 font-mono">00:{countdown.toString().padStart(2, '0')}</strong>
+                        <span className="font-medium text-slate-400">
+                            Kirim ulang dalam{' '}
+                            <strong className="font-mono text-emerald-600 dark:text-emerald-400">
+                                00:{countdown.toString().padStart(2, '0')}
+                            </strong>
                         </span>
                     ) : (
                         <button
                             type="button"
                             onClick={handleResendClick}
                             disabled={isResending || processing}
-                            className="inline-flex items-center gap-1.5 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition"
+                            className="inline-flex items-center gap-1.5 font-bold text-emerald-600 transition hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
                         >
-                            <RefreshCw className={`w-3.5 h-3.5 ${isResending ? 'animate-spin' : ''}`} />
+                            <RefreshCw
+                                className={`h-3.5 w-3.5 ${isResending ? 'animate-spin' : ''}`}
+                            />
                             <span>Kirim Ulang Kode OTP</span>
                         </button>
                     )}
