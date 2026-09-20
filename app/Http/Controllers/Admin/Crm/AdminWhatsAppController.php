@@ -120,6 +120,8 @@ class AdminWhatsAppController extends Controller
             'endpoint_url' => ['required', 'url', 'max:255'],
             'api_key' => ['nullable', 'string', 'max:255'],
             'sender' => ['nullable', 'string', 'max:30'],
+            'admin_notify_number' => ['nullable', 'string', 'max:30'],
+            'notify_on_registration' => ['nullable', 'boolean'],
             'default_footer' => ['nullable', 'string', 'max:100'],
             'is_active' => ['required', 'boolean'],
             'full_response' => ['required', 'boolean'],

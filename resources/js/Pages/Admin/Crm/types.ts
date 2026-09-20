@@ -3,6 +3,8 @@ export interface WaGatewaySetting {
     endpoint_url: string;
     api_key: string | null;
     sender: string | null;
+    admin_notify_number: string | null;
+    notify_on_registration: boolean;
     default_footer: string | null;
     is_active: boolean;
     full_response: boolean;

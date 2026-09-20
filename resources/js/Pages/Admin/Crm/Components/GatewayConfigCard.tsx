@@ -26,6 +26,8 @@ export default function GatewayConfigCard({ setting }: GatewayConfigCardProps) {
         endpoint_url: setting.endpoint_url || 'https://gateway.asr-desain.my.id/send-message',
         api_key: setting.api_key || '',
         sender: setting.sender || '',
+        admin_notify_number: setting.admin_notify_number || '',
+        notify_on_registration: setting.notify_on_registration ?? true,
         default_footer: setting.default_footer || 'EduGen AI - Platform Perangkat Ajar Modern',
         is_active: setting.is_active,
         full_response: setting.full_response ?? true,
@@ -193,6 +195,24 @@ export default function GatewayConfigCard({ setting }: GatewayConfigCardProps) {
                         />
                     </div>
 
+                    {/* Admin Notification Number */}
+                    <div className="md:col-span-2">
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                            <Smartphone className="w-3.5 h-3.5 text-blue-500" />
+                            Nomor WhatsApp Admin (Notifikasi Pendaftar Baru)
+                        </label>
+                        <input
+                            type="text"
+                            value={form.data.admin_notify_number}
+                            onChange={(e) => form.setData('admin_notify_number', e.target.value)}
+                            placeholder="Contoh: 081234567890 / 6281234567890"
+                            className="w-full text-xs rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-800/80 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                        />
+                        <span className="text-[10px] text-slate-400 mt-1 block">
+                            Nomor WhatsApp Super Admin yang otomatis menerima notifikasi data pendaftar baru secara real-time.
+                        </span>
+                    </div>
+
                     {/* Default Footer */}
                     <div className="md:col-span-2">
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -221,6 +241,20 @@ export default function GatewayConfigCard({ setting }: GatewayConfigCardProps) {
                         />
                         <label htmlFor="is_active" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
                             Aktifkan Layanan WhatsApp Gateway Otomatis
+                        </label>
+                    </div>
+
+                    {/* Toggle Notify on Registration */}
+                    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        <input
+                            type="checkbox"
+                            id="notify_on_registration"
+                            checked={form.data.notify_on_registration}
+                            onChange={(e) => form.setData('notify_on_registration', e.target.checked)}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <label htmlFor="notify_on_registration" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                            Kirim Notifikasi Real-Time ke Admin Saat Ada Pendaftar Baru
                         </label>
                     </div>
 

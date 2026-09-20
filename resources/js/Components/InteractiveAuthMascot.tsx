@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type MascotMood = 'idle' | 'focus-name' | 'focus-email' | 'focus-password' | 'submitting' | 'success';
+export type MascotMood = 'idle' | 'focus-name' | 'focus-email' | 'focus-phone' | 'focus-password' | 'submitting' | 'success';
 
 interface InteractiveAuthMascotProps {
     mood?: MascotMood;
@@ -15,7 +15,7 @@ export default function InteractiveAuthMascot({
 }: InteractiveAuthMascotProps) {
     const isCoveringEyes = (mood === 'focus-password') && !showPassword;
     const isPeeking = (mood === 'focus-password') && showPassword;
-    const isLookingDown = mood === 'focus-email' || mood === 'focus-name';
+    const isLookingDown = mood === 'focus-email' || mood === 'focus-name' || mood === 'focus-phone';
     const isSubmitting = mood === 'submitting';
 
     return (

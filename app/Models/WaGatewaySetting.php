@@ -13,6 +13,8 @@ class WaGatewaySetting extends Model
         'endpoint_url',
         'api_key',
         'sender',
+        'admin_notify_number',
+        'notify_on_registration',
         'default_footer',
         'is_active',
         'full_response',
@@ -24,6 +26,7 @@ class WaGatewaySetting extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'full_response' => 'boolean',
+        'notify_on_registration' => 'boolean',
         'last_tested_at' => 'datetime',
     ];
 
