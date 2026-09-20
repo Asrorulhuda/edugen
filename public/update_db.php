@@ -202,6 +202,49 @@ foreach ($smartSeeders as $seed) {
     }
 }
 
+// 6b. Sinkronisasi Data Master Kurikulum, Alias, dan Elemen Pembelajaran
+try {
+    if (Schema::hasTable('curriculum_frameworks') && Schema::hasColumn('curriculum_frameworks', 'aliases')) {
+        DB::table('curriculum_frameworks')->where('code', 'MADRASAH_KBC')->whereNull('aliases')->update([
+            'aliases' => json_encode(['KBC', 'MADRASAH']),
+        ]);
+    }
+    if (Schema::hasTable('subjects') && Schema::hasColumn('subjects', 'aliases')) {
+        DB::table('subjects')->where('code', 'FIQ')->whereNull('aliases')->update([
+            'aliases' => json_encode(['FIK', 'FIQIH']),
+        ]);
+    }
+    if (Schema::hasTable('learning_elements') && Schema::hasTable('subjects')) {
+        foreach (['QH', 'FIQ', 'SKI'] as $subCode) {
+            $sub = DB::table('subjects')->where('code', $subCode)->first();
+            if ($sub) {
+                $elemId = DB::table('learning_elements')->where('subject_id', $sub->id)->where('name', 'Keterampilan Proses')->value('id');
+                if (!$elemId) {
+                    $elemId = DB::table('learning_elements')->insertGetId([
+                        'subject_id' => $sub->id,
+                        'code' => 'Keterampilan Proses',
+                        'name' => 'Keterampilan Proses',
+                        'description' => "Elemen keterampilan proses pada mata pelajaran {$sub->name}",
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+                if (Schema::hasTable('learning_outcomes')) {
+                    DB::table('learning_outcomes')
+                        ->where('subject_id', $sub->id)
+                        ->where('code', 'like', "%-04")
+                        ->orWhere(function($q) use ($sub) {
+                            $q->where('subject_id', $sub->id)->whereIn('code', ['CP-FIK-FA-02', 'CP-FIK-FB-02', 'CP-FIK-FC-03', 'CP-SKI-FB-02', 'CP-SKI-FC-02']);
+                        })
+                        ->update(['learning_element_id' => $elemId]);
+                }
+            }
+        }
+    }
+} catch (\Throwable $e) {
+    // Non-blocking
+}
+
 // 7. Jaminan Hak Akses Super Admin Platform (Khususnya akun asrorulhuda@gmail.com & admin@edugen.id)
 try {
     $superRole = \App\Models\Role::where('name', 'SUPER_ADMIN')->first();

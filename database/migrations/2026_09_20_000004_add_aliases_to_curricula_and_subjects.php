@@ -37,6 +37,70 @@ return new class extends Migration
             ->update([
                 'aliases' => json_encode(['FIK', 'FIQIH']),
             ]);
+
+        // Ensure Keterampilan Proses elements exist independently per-subject for Madrasah
+        if (Schema::hasTable('learning_elements') && Schema::hasTable('subjects')) {
+            $qh = DB::table('subjects')->where('code', 'QH')->first();
+            $fiq = DB::table('subjects')->where('code', 'FIQ')->first();
+            $ski = DB::table('subjects')->where('code', 'SKI')->first();
+
+            if ($qh) {
+                $qhElemId = DB::table('learning_elements')->where('subject_id', $qh->id)->where('name', 'Keterampilan Proses')->value('id');
+                if (!$qhElemId) {
+                    $qhElemId = DB::table('learning_elements')->insertGetId([
+                        'subject_id' => $qh->id,
+                        'code' => 'Keterampilan Proses',
+                        'name' => 'Keterampilan Proses',
+                        'description' => 'Elemen keterampilan proses pada mata pelajaran Al-Qur\'an Hadis',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+                if (Schema::hasTable('learning_outcomes')) {
+                    DB::table('learning_outcomes')->where('subject_id', $qh->id)
+                        ->whereIn('code', ['CP-QH-FA-04', 'CP-QH-FB-04', 'CP-QH-FC-04'])
+                        ->update(['learning_element_id' => $qhElemId]);
+                }
+            }
+
+            if ($fiq) {
+                $fiqElemId = DB::table('learning_elements')->where('subject_id', $fiq->id)->where('name', 'Keterampilan Proses')->value('id');
+                if (!$fiqElemId) {
+                    $fiqElemId = DB::table('learning_elements')->insertGetId([
+                        'subject_id' => $fiq->id,
+                        'code' => 'Keterampilan Proses',
+                        'name' => 'Keterampilan Proses',
+                        'description' => 'Elemen keterampilan proses pada mata pelajaran Fikih',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+                if (Schema::hasTable('learning_outcomes')) {
+                    DB::table('learning_outcomes')->where('subject_id', $fiq->id)
+                        ->whereIn('code', ['CP-FIK-FA-02', 'CP-FIK-FB-02', 'CP-FIK-FC-03'])
+                        ->update(['learning_element_id' => $fiqElemId]);
+                }
+            }
+
+            if ($ski) {
+                $skiElemId = DB::table('learning_elements')->where('subject_id', $ski->id)->where('name', 'Keterampilan Proses')->value('id');
+                if (!$skiElemId) {
+                    $skiElemId = DB::table('learning_elements')->insertGetId([
+                        'subject_id' => $ski->id,
+                        'code' => 'Keterampilan Proses',
+                        'name' => 'Keterampilan Proses',
+                        'description' => 'Elemen keterampilan proses pada mata pelajaran Sejarah Kebudayaan Islam',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+                if (Schema::hasTable('learning_outcomes')) {
+                    DB::table('learning_outcomes')->where('subject_id', $ski->id)
+                        ->whereIn('code', ['CP-SKI-FB-02', 'CP-SKI-FC-02'])
+                        ->update(['learning_element_id' => $skiElemId]);
+                }
+            }
+        }
     }
 
     /**
