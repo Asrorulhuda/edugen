@@ -69,12 +69,7 @@ if (!is_dir($projectDir) || !chdir($projectDir)) {
 $commands = [
     'git fetch origin main',
     'git reset --hard origin/main',
-    'php artisan migrate --force',
-    'php artisan storage:link || true',
-    'php artisan optimize:clear',
-    'php artisan config:cache',
-    'php artisan route:cache',
-    'php artisan view:cache',
+    'php public/update_db.php',
 ];
 
 $outputLog = [];
