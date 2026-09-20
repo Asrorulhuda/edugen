@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { Menu, X, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
+import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 interface NavbarProps {
     auth?: {
@@ -19,9 +20,7 @@ export default function Navbar({ auth, canLogin = true, canRegister = true }: Na
                 {/* Brand Logo & Name */}
                 <div className="flex items-center gap-6">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-sm shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                            <BookOpen className="w-5 h-5" />
-                        </div>
+                        <ApplicationLogo className="w-9 h-9 drop-shadow-xs group-hover:scale-110 transition-transform" />
                         <div className="leading-tight">
                             <span className="text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
                                 EduGen

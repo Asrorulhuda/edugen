@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Mail, Phone, MapPin, Heart } from 'lucide-react';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 interface FooterContent {
     brand_name?: string;
@@ -32,10 +33,8 @@ export default function FooterSection({ content = {} }: FooterSectionProps) {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand info */}
                     <div className="md:col-span-2 space-y-3">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
-                                <BookOpen className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center gap-2.5">
+                            <ApplicationLogo className="w-8 h-8 drop-shadow-xs" />
                             <span className="text-base font-black text-slate-900 dark:text-white">
                                 {brandName}
                             </span>
