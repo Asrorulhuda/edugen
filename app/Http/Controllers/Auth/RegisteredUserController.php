@@ -78,23 +78,28 @@ class RegisteredUserController extends Controller
             . "👉 *{$otpCode}*\n\n"
             . "⚠️ *PENTING:* Kode ini berlaku selama *10 menit*. Jangan berikan kode ini kepada orang lain demi keamanan akun Anda.";
 
-        $waService->sendMessage(
+        $waResult = $waService->sendMessage(
             number: $normalizedPhone,
             message: $message,
             source: 'OTP_REGISTRATION',
             recipientName: $request->name
         );
 
-        $isGatewayActive = $waService->isActive();
+        $isDelivered = $waResult['success'] ?? false;
+        $fallbackOtp = (!app()->environment('production') || !$isDelivered) ? $otpCode : null;
 
         return response()->json([
             'success' => true,
             'token' => $regToken,
             'phone' => $normalizedPhone,
             'display_phone' => $request->phone,
-            'message' => 'Kode OTP 6-digit telah dikirimkan ke WhatsApp Anda.',
+            'message' => $isDelivered
+                ? 'Kode OTP 6-digit telah dikirimkan ke WhatsApp Anda.'
+                : 'Perhatian: WhatsApp Gateway gagal mengirim pesan (' . ($waResult['message'] ?? 'Sender tidak terhubung') . '). Gunakan kode OTP di layar untuk melanjutkan.',
             'expires_in' => 600,
-            'dev_otp' => (!app()->environment('production') && !$isGatewayActive) ? $otpCode : null,
+            'dev_otp' => $fallbackOtp,
+            'gateway_delivered' => $isDelivered,
+            'gateway_error' => $isDelivered ? null : ($waResult['message'] ?? null),
         ]);
     }
 
@@ -143,20 +148,24 @@ class RegisteredUserController extends Controller
             . "👉 *{$otpCode}*\n\n"
             . "Kode ini berlaku selama 10 menit. Masukkan kode ini pada halaman pendaftaran.";
 
-        $waService->sendMessage(
+        $waResult = $waService->sendMessage(
             number: $data['phone'],
             message: $message,
             source: 'OTP_REGISTRATION',
             recipientName: $data['name']
         );
 
-        $isGatewayActive = $waService->isActive();
+        $isDelivered = $waResult['success'] ?? false;
+        $fallbackOtp = (!app()->environment('production') || !$isDelivered) ? $otpCode : null;
 
         return response()->json([
             'success' => true,
-            'message' => 'Kode OTP baru telah dikirimkan ke WhatsApp Anda.',
+            'message' => $isDelivered
+                ? 'Kode OTP baru telah dikirimkan ke WhatsApp Anda.'
+                : 'Peringatan: WhatsApp Gateway gagal mengirim pesan (' . ($waResult['message'] ?? 'Sender offline') . ').',
             'expires_in' => 600,
-            'dev_otp' => (!app()->environment('production') && !$isGatewayActive) ? $otpCode : null,
+            'dev_otp' => $fallbackOtp,
+            'gateway_delivered' => $isDelivered,
         ]);
     }
 
