@@ -17,6 +17,7 @@ class CurriculumFramework extends Model
         'code',
         'name',
         'description',
+        'aliases',
         'config_json',
         'is_active',
     ];
@@ -24,6 +25,7 @@ class CurriculumFramework extends Model
     protected function casts(): array
     {
         return [
+            'aliases' => 'array',
             'config_json' => 'array',
             'is_active' => 'boolean',
         ];

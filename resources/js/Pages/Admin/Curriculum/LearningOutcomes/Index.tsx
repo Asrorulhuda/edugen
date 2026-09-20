@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { BookOpen, CheckCircle, Clock, Database, Edit, Eye, Filter, Plus, Search, ShieldAlert, UploadCloud, XCircle } from 'lucide-react';
+import { AlertTriangle, BookOpen, CheckCircle, CheckCircle2, Clock, Database, Edit, Eye, Filter, Plus, Search, ShieldAlert, ShieldCheck, Trash2, UploadCloud, X, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -39,6 +39,7 @@ interface Props {
     phases: Array<{ id: number; code: string; name: string; level_summary: string }>;
     levels: Array<{ id: number; code: string; name: string }>;
     regulations: Array<{ id: number; code: string; title: string }>;
+    draftCount?: number;
 }
 
 export default function Index({
@@ -49,12 +50,54 @@ export default function Index({
     phases,
     levels,
     regulations,
+    draftCount = 0,
 }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedCurriculum, setSelectedCurriculum] = useState(filters.curriculum_code || '');
     const [selectedSubject, setSelectedSubject] = useState(filters.subject_id || '');
     const [selectedPhase, setSelectedPhase] = useState(filters.phase_id || '');
     const [selectedStatus, setSelectedStatus] = useState(filters.status || '');
+    
+    // Delete All State
+    const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
+    const [deleteScope, setDeleteScope] = useState<string>('ALL');
+    const [confirmText, setConfirmText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Publish All (Approve All Drafts) State
+    const [isPublishAllOpen, setIsPublishAllOpen] = useState(false);
+    const [publishScope, setPublishScope] = useState<string>('ALL');
+    const [publishReason, setPublishReason] = useState('Persetujuan dan verifikasi naskah resmi CP Draft selesai.');
+    const [isPublishing, setIsPublishing] = useState(false);
+
+    const handlePublishAll = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsPublishing(true);
+        router.post(route('admin.learning-outcomes.publish-all'), {
+            curriculum_code: publishScope,
+            reason: publishReason,
+        }, {
+            onFinish: () => {
+                setIsPublishing(false);
+                setIsPublishAllOpen(false);
+            },
+        });
+    };
+
+    const handleDeleteAll = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (confirmText !== 'HAPUS') return;
+
+        setIsDeleting(true);
+        router.delete(route('admin.learning-outcomes.destroy-all'), {
+            data: { curriculum_code: deleteScope },
+            onFinish: () => {
+                setIsDeleting(false);
+                setIsDeleteAllOpen(false);
+                setConfirmText('');
+            },
+        });
+    };
 
     const applyFilters = () => {
         router.get(
@@ -119,7 +162,27 @@ export default function Index({
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {draftCount > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setIsPublishAllOpen(true)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/20 transition"
+                            >
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Setujui Semua Draft ({draftCount})</span>
+                            </button>
+                        )}
+                        {learningOutcomes.total > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setIsDeleteAllOpen(true)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 shadow-xs transition"
+                            >
+                                <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                                <span>Hapus Semua CP</span>
+                            </button>
+                        )}
                         <Link
                             href={route('admin.import-cp.index')}
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 shadow-xs transition"
@@ -129,7 +192,7 @@ export default function Index({
                         </Link>
                         <Link
                             href={route('admin.learning-outcomes.create')}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/20 transition"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm transition"
                         >
                             <Plus className="w-4 h-4" />
                             <span>Tambah CP Manual</span>
@@ -141,6 +204,32 @@ export default function Index({
             <Head title="Master Capaian Pembelajaran (CP) - Super Admin" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+                {/* Draft CP Review Banner */}
+                {draftCount > 0 && (
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/25 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs shadow-xs">
+                        <div className="flex items-center gap-2.5 text-amber-800 dark:text-amber-300">
+                            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <span className="font-bold text-slate-900 dark:text-white text-sm">
+                                    Terdapat {draftCount} Data CP Menunggu Peninjauan (DRAFT)
+                                </span>
+                                <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                                    CP berstatus DRAFT belum aktif untuk guru. Anda dapat meninjau naskah atau langsung menyetujui seluruhnya agar resmi dipublikasikan.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsPublishAllOpen(true)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/20 transition shrink-0"
+                        >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Setujui & Publikasikan Seluruh Draft ({draftCount})</span>
+                        </button>
+                    </div>
+                )}
                 {/* Filter Bar */}
                 <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -334,6 +423,196 @@ export default function Index({
                     )}
                 </div>
             </div>
+
+            {/* MODAL: KONFIRMASI HAPUS SEMUA CP */}
+            {isDeleteAllOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-rose-200 dark:border-rose-900/60 max-w-md w-full p-6 space-y-4 shadow-2xl">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+                                    <AlertTriangle className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                        Hapus Semua Capaian Pembelajaran?
+                                    </h3>
+                                    <p className="text-xs text-slate-500">
+                                        Tindakan ini tidak dapat dibatalkan.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsDeleteAllOpen(false);
+                                    setConfirmText('');
+                                }}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-800 dark:text-rose-300 space-y-1.5">
+                            <p className="font-semibold">
+                                Perhatian Super Admin:
+                            </p>
+                            <p>
+                                Seluruh riwayat versi CP, data tujuan pembelajaran (TP), dan draft terkait akan ikut terhapus. Log audit penghapusan akan tetap disimpan untuk kepatuhan sistem.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleDeleteAll} className="space-y-4 text-xs">
+                            <div>
+                                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Cakupan Kurikulum yang Dihapus:
+                                </label>
+                                <select
+                                    value={deleteScope}
+                                    onChange={(e) => setDeleteScope(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                >
+                                    <option value="ALL">Semua Kurikulum (Total: {learningOutcomes.total} CP)</option>
+                                    {curricula.map((c) => (
+                                        <option key={c.code} value={c.code}>
+                                            Hanya Kurikulum {c.name} ({c.code})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Ketik <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">HAPUS</span> untuk mengonfirmasi:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={confirmText}
+                                    onChange={(e) => setConfirmText(e.target.value)}
+                                    placeholder="Ketik HAPUS di sini"
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    disabled={isDeleting}
+                                    onClick={() => {
+                                        setIsDeleteAllOpen(false);
+                                        setConfirmText('');
+                                    }}
+                                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={confirmText !== 'HAPUS' || isDeleting}
+                                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition disabled:opacity-40 flex items-center gap-1.5"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>{isDeleting ? 'Menghapus...' : 'Ya, Hapus Sekarang'}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL: PERSETUJUAN & PUBLIKASI MASSAL CP DRAFT */}
+            {isPublishAllOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-emerald-200 dark:border-emerald-800 max-w-md w-full p-6 space-y-4 shadow-2xl">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                                    <CheckCircle2 className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                        Setujui & Publikasikan Semua CP Draft?
+                                    </h3>
+                                    <p className="text-xs text-slate-500">
+                                        Data akan berstatus PUBLISHED dan langsung aktif untuk guru.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsPublishAllOpen(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                            <p className="font-semibold">
+                                Informasi Verifikasi:
+                            </p>
+                            <p>
+                                Sebanyak <strong>{draftCount}</strong> Capaian Pembelajaran berstatus DRAFT akan diverifikasi secara massal atas nama akun Super Admin Anda.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handlePublishAll} className="space-y-4 text-xs">
+                            <div>
+                                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Cakupan Kurikulum yang Disetujui:
+                                </label>
+                                <select
+                                    value={publishScope}
+                                    onChange={(e) => setPublishScope(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                >
+                                    <option value="ALL">Semua Kurikulum ({draftCount} Draft CP)</option>
+                                    {curricula.map((c) => (
+                                        <option key={c.code} value={c.code}>
+                                            Hanya Kurikulum {c.name} ({c.code})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Catatan Alasan Verifikasi & Publikasi:
+                                </label>
+                                <textarea
+                                    rows={2}
+                                    value={publishReason}
+                                    onChange={(e) => setPublishReason(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                    placeholder="e.g. Verifikasi dan persetujuan naskah resmi selesai."
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    disabled={isPublishing}
+                                    onClick={() => setIsPublishAllOpen(false)}
+                                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isPublishing}
+                                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm shadow-emerald-500/20"
+                                >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>{isPublishing ? 'Menyetujui & Mempublikasikan...' : 'Setujui & Publikasikan Sekarang'}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

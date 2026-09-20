@@ -16,6 +16,7 @@ class Subject extends Model
         'category',
         'education_level_scope',
         'description',
+        'aliases',
         'is_active',
     ];
 
@@ -23,6 +24,7 @@ class Subject extends Model
     {
         return [
             'education_level_scope' => 'array',
+            'aliases' => 'array',
             'is_active' => 'boolean',
         ];
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Curriculum;
 
 use App\Http\Controllers\Controller;
 use App\Models\CurriculumFramework;
+use App\Models\EducationLevel;
 use App\Models\LearningElement;
 use App\Models\LearningOutcome;
 use App\Models\Phase;
@@ -21,11 +22,12 @@ class TeacherCpBrowserController extends Controller
      */
     public function index(Request $request, TenantContext $tenantContext): Response
     {
-        // Determine default curriculum mode based on institution or personal preference
-        $institution = $tenantContext->institution();
-        $defaultCurriculum = $institution?->default_curriculum_mode ?? 'MERDEKA';
-
-        $curriculumCode = $request->input('curriculum_code', $defaultCurriculum);
+        $curriculumCode = $request->input('curriculum_code');
+        $educationLevelId = $request->input('education_level_id');
+        $subjectId = $request->input('subject_id');
+        $phaseId = $request->input('phase_id');
+        $elementId = $request->input('element_id');
+        $search = $request->input('search');
 
         $query = LearningOutcome::with([
             'curriculum:id,code,name',
@@ -37,31 +39,37 @@ class TeacherCpBrowserController extends Controller
         ])
         ->where('status', LearningOutcome::STATUS_PUBLISHED); // Strict: only published CP
 
-        if ($curriculumCode) {
+        // If specific curriculum is selected (not empty and not ALL)
+        if (!empty($curriculumCode) && $curriculumCode !== 'ALL') {
             $query->where('curriculum_code', $curriculumCode);
         }
 
-        if ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->input('subject_id'));
+        if (!empty($educationLevelId) && $educationLevelId !== 'ALL') {
+            $query->where('education_level_id', $educationLevelId);
         }
 
-        if ($request->filled('phase_id')) {
-            $query->where('phase_id', $request->input('phase_id'));
+        if (!empty($subjectId) && $subjectId !== 'ALL') {
+            $query->where('subject_id', $subjectId);
         }
 
-        if ($request->filled('element_id')) {
-            $query->where('learning_element_id', $request->input('element_id'));
+        if (!empty($phaseId) && $phaseId !== 'ALL') {
+            $query->where('phase_id', $phaseId);
         }
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        if (!empty($elementId) && $elementId !== 'ALL') {
+            $query->where('learning_element_id', $elementId);
+        }
+
+        if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
                     ->orWhere('cp_text', 'like', "%{$search}%");
             });
         }
 
-        $learningOutcomes = $query->orderBy('subject_id')
+        $learningOutcomes = $query->orderBy('curriculum_code')
+            ->orderBy('education_level_id')
+            ->orderBy('subject_id')
             ->orderBy('phase_id')
             ->paginate(12)
             ->withQueryString();
@@ -69,17 +77,19 @@ class TeacherCpBrowserController extends Controller
         return Inertia::render('Curriculum/BrowseCp', [
             'learningOutcomes' => $learningOutcomes,
             'filters' => [
-                'curriculum_code' => $curriculumCode,
-                'subject_id' => $request->input('subject_id'),
-                'phase_id' => $request->input('phase_id'),
-                'element_id' => $request->input('element_id'),
-                'search' => $request->input('search'),
+                'curriculum_code' => $curriculumCode ?: '',
+                'education_level_id' => $educationLevelId ?: '',
+                'subject_id' => $subjectId ?: '',
+                'phase_id' => $phaseId ?: '',
+                'element_id' => $elementId ?: '',
+                'search' => $search ?: '',
             ],
             'curricula' => CurriculumFramework::where('is_active', true)->get(['code', 'name']),
-            'subjects' => Subject::where('is_active', true)->orderBy('name')->get(['id', 'code', 'name', 'category']),
+            'educationLevels' => EducationLevel::orderBy('order_index')->get(['id', 'code', 'name']),
+            'subjects' => Subject::where('is_active', true)->orderBy('category')->orderBy('name')->get(['id', 'code', 'name', 'category']),
             'phases' => Phase::orderBy('order_index')->get(['id', 'code', 'name', 'level_summary']),
-            'elements' => $request->filled('subject_id')
-                ? LearningElement::where('subject_id', $request->input('subject_id'))->get(['id', 'code', 'name'])
+            'elements' => !empty($subjectId)
+                ? LearningElement::where('subject_id', $subjectId)->get(['id', 'code', 'name'])
                 : [],
         ]);
     }

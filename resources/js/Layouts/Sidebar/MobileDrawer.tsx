@@ -24,6 +24,7 @@ import {
     Cpu,
     Package,
     MessageSquare,
+    Settings2,
 } from 'lucide-react';
 
 interface MobileDrawerProps {
@@ -303,6 +304,15 @@ export default function MobileDrawer({
                             >
                                 <UploadCloud className="w-4 h-4" />
                                 <span>Import CP (Excel/CSV)</span>
+                            </Link>
+
+                            <Link
+                                href={route('admin.curriculum-config.index')}
+                                onClick={onClose}
+                                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100"
+                            >
+                                <Settings2 className="w-4 h-4 text-amber-500" />
+                                <span>Konfigurasi Kurikulum & Mapel</span>
                             </Link>
 
                             <Link

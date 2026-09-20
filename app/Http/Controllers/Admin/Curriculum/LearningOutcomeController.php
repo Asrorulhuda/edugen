@@ -81,6 +81,7 @@ class LearningOutcomeController extends Controller
             'phases' => Phase::orderBy('order_index')->get(['id', 'code', 'name', 'level_summary']),
             'levels' => EducationLevel::orderBy('order_index')->get(['id', 'code', 'name']),
             'regulations' => Regulation::orderBy('year', 'desc')->get(['id', 'code', 'title']),
+            'draftCount' => LearningOutcome::where('status', LearningOutcome::STATUS_DRAFT)->count(),
         ]);
     }
 
@@ -376,5 +377,98 @@ class LearningOutcomeController extends Controller
         ]);
 
         return back()->with('success', "CP [{$learningOutcome->code}] berhasil diarsipkan.");
+    }
+
+    /**
+     * Bulk delete all learning outcomes (with optional scope filter)
+     */
+    public function destroyAll(Request $request): RedirectResponse
+    {
+        $curriculumCode = $request->input('curriculum_code');
+
+        $query = LearningOutcome::query();
+        if (!empty($curriculumCode) && $curriculumCode !== 'ALL') {
+            $query->where('curriculum_code', $curriculumCode);
+        }
+
+        $count = $query->count();
+        if ($count === 0) {
+            return back()->with('error', 'Tidak ada data CP yang dapat dihapus.');
+        }
+
+        // Delete records (cascades to child tables)
+        $query->delete();
+
+        // Traceable audit log for Super Admin compliance
+        CpAuditLog::create([
+            'learning_outcome_id' => null,
+            'actor_id' => $request->user()->id,
+            'action' => 'DELETE_ALL',
+            'reason' => $request->input('reason', "Menghapus batch {$count} data CP oleh Super Admin."),
+            'before_payload' => [
+                'deleted_count' => $count,
+                'curriculum_filter' => $curriculumCode ?: 'ALL',
+            ],
+            'created_at' => now(),
+        ]);
+
+        return redirect()->route('admin.learning-outcomes.index')
+            ->with('success', "Berhasil menghapus {$count} data Capaian Pembelajaran.");
+    }
+
+    /**
+     * Approve and publish all draft learning outcomes in batch
+     */
+    public function publishAll(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'curriculum_code' => ['nullable', 'string'],
+            'reason' => ['nullable', 'string'],
+        ]);
+
+        $userId = $request->user()->id;
+        $curriculumCode = $request->input('curriculum_code');
+
+        $query = LearningOutcome::where('status', LearningOutcome::STATUS_DRAFT);
+        if (!empty($curriculumCode) && $curriculumCode !== 'ALL') {
+            $query->where('curriculum_code', $curriculumCode);
+        }
+
+        $draftCps = $query->get();
+        $count = $draftCps->count();
+
+        if ($count === 0) {
+            return back()->with('error', 'Tidak ada data CP berstatus DRAFT yang dapat dipublikasikan.');
+        }
+
+        $now = now();
+        $reason = $request->input('reason') ?: 'Persetujuan dan publikasi massal seluruh CP Draft resmi oleh Super Admin.';
+
+        foreach ($draftCps as $cp) {
+            $cp->update([
+                'status' => LearningOutcome::STATUS_PUBLISHED,
+                'verified_by' => $userId,
+                'verified_at' => $now,
+                'published_at' => $now,
+                'updated_by' => $userId,
+            ]);
+
+            CpAuditLog::create([
+                'learning_outcome_id' => $cp->id,
+                'actor_id' => $userId,
+                'action' => 'PUBLISH_BATCH',
+                'reason' => $reason,
+                'before_payload' => ['status' => 'DRAFT'],
+                'after_payload' => [
+                    'status' => 'PUBLISHED',
+                    'verified_at' => $now,
+                    'published_at' => $now,
+                ],
+                'created_at' => $now,
+            ]);
+        }
+
+        return redirect()->route('admin.learning-outcomes.index')
+            ->with('success', "Berhasil menyetujui dan mempublikasikan {$count} data CP Draft menjadi PUBLISHED (aktif untuk guru).");
     }
 }

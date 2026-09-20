@@ -25,6 +25,7 @@ import {
     Cpu,
     Package,
     MessageSquare,
+    Settings2,
 } from 'lucide-react';
 
 interface AppSidebarProps {
@@ -363,6 +364,19 @@ export default function AppSidebar({
                         >
                             <UploadCloud className="w-4 h-4 shrink-0" />
                             {!isCollapsed && <span className="truncate">Import CP (Excel/CSV)</span>}
+                        </Link>
+
+                        <Link
+                            href={route('admin.curriculum-config.index')}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                                isCurrentRoute('admin.curriculum-config.*')
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                        } ${isCollapsed ? 'justify-center' : ''}`}
+                            title={isCollapsed ? 'Konfigurasi Kurikulum & Mapel' : undefined}
+                        >
+                            <Settings2 className="w-4 h-4 shrink-0 text-amber-500" />
+                            {!isCollapsed && <span className="truncate">Konfigurasi Kurikulum & Mapel</span>}
                         </Link>
 
                         <Link
