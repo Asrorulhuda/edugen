@@ -21,6 +21,7 @@ import {
     AlertCircle,
     Mail,
     Phone,
+    Trash2,
 } from 'lucide-react';
 
 interface ShowProps {
@@ -103,6 +104,16 @@ export default function Show({
         ? Math.min(100, Math.round((activeSubscription.ai_quota_used / activeSubscription.ai_quota_limit) * 100))
         : 0;
 
+    const handleDeleteClient = () => {
+        if (
+            confirm(
+                `PERINGATAN KERAS: Apakah Anda yakin ingin menghapus permanen client "${client.name}"?\n\nSeluruh perangkat ajar, bank soal, akun guru, dan riwayat pesanan/langganan akan dihapus selamanya dari database.`
+            )
+        ) {
+            router.delete(route('admin.clients.destroy', client.id));
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -179,6 +190,15 @@ export default function Show({
                         >
                             <ShieldCheck className="w-3.5 h-3.5" />
                             Tetapkan Paket
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleDeleteClient}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Hapus Client
                         </button>
                     </div>
                 </div>

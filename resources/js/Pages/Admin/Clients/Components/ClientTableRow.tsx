@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, router } from '@inertiajs/react';
-import { Building2, User, Sparkles, MoreVertical, Eye, ShieldCheck, Ban, RefreshCw, Calendar } from 'lucide-react';
+import { Building2, User, Sparkles, MoreVertical, Eye, ShieldCheck, Ban, RefreshCw, Calendar, Trash2 } from 'lucide-react';
 import { ClientItem } from '../types';
 
 interface ClientTableRowProps {
@@ -8,6 +8,7 @@ interface ClientTableRowProps {
     onAdjustQuota: (client: ClientItem) => void;
     onAdjustDuration: (client: ClientItem) => void;
     onAssignPlan: (client: ClientItem) => void;
+    onDeleteClient?: (client: ClientItem) => void;
 }
 
 export default function ClientTableRow({
@@ -15,6 +16,7 @@ export default function ClientTableRow({
     onAdjustQuota,
     onAdjustDuration,
     onAssignPlan,
+    onDeleteClient,
 }: ClientTableRowProps) {
     const isInstitution = client.tenant_type === 'INSTITUTION';
     const sub = client.active_subscription;
@@ -34,6 +36,23 @@ export default function ClientTableRow({
         : 0;
 
     const remainingDays = sub ? Math.ceil(Number(sub.days_remaining)) : 0;
+
+    const handleDeleteClient = () => {
+        if (onDeleteClient) {
+            onDeleteClient(client);
+            return;
+        }
+
+        if (
+            confirm(
+                `PERINGATAN: Apakah Anda yakin ingin menghapus permanen client "${client.name}"?\n\nSeluruh data modul ajar, bank soal, akun guru, dan langganan akan dihapus selamanya dan tidak dapat dikembalikan.`
+            )
+        ) {
+            router.delete(route('admin.clients.destroy', client.id), {
+                preserveScroll: true,
+            });
+        }
+    };
 
     return (
         <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors border-b border-slate-200/70 dark:border-slate-700/60">
@@ -202,6 +221,14 @@ export default function ClientTableRow({
                     >
                         <Eye className="w-4 h-4" />
                     </Link>
+                    <button
+                        type="button"
+                        onClick={handleDeleteClient}
+                        title="Hapus Permanen Client"
+                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
                 </div>
             </td>
         </tr>

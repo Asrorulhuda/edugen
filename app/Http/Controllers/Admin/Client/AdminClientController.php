@@ -469,4 +469,20 @@ class AdminClientController extends Controller
 
         return back()->with('success', "Client baru \"{$name}\" berhasil didaftarkan.");
     }
+
+    /**
+     * Permanently delete client tenant and associated data
+     */
+    public function destroy(Tenant $tenant): RedirectResponse
+    {
+        $name = $tenant->name;
+
+        DB::transaction(function () use ($tenant) {
+            User::where('last_active_tenant_id', $tenant->id)->update(['last_active_tenant_id' => null]);
+            $tenant->delete();
+        });
+
+        return redirect()->route('admin.clients.index')
+            ->with('success', "Client \"{$name}\" berhasil dihapus secara permanen beserta seluruh datanya.");
+    }
 }

@@ -378,6 +378,26 @@ export default function AppSidebar({
                             {!isCollapsed && <span className="truncate">Verifikasi Langganan</span>}
                         </Link>
 
+                        <Link
+                            href={route('admin.payment-settings.index')}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                                isCurrentRoute('admin.payment-settings.*')
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border-l-2 border-amber-500'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                        } ${isCollapsed ? 'justify-center' : ''}`}
+                            title={isCollapsed ? 'Pengaturan Pembayaran & Gateway' : undefined}
+                        >
+                            <CreditCard className="w-4 h-4 shrink-0 text-amber-500" />
+                            {!isCollapsed && (
+                                <div className="flex items-center justify-between w-full">
+                                    <span className="truncate">Pengaturan Pembayaran</span>
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                                        PAY
+                                    </span>
+                                </div>
+                            )}
+                        </Link>
+
                         {/* CMS Landing Page Menu */}
                         <Link
                             href={route('admin.landing-page.index')}

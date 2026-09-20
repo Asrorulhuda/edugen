@@ -10,12 +10,17 @@ Route::get('/', function () {
         ->get()
         ->keyBy('key');
 
+    $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+        ->orderBy('order_index')
+        ->get();
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
         'sections' => $sections,
+        'plans' => $plans,
     ]);
 });
 
@@ -171,6 +176,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/{order}/verify', [\App\Http\Controllers\Admin\Billing\AdminBillingController::class, 'verifyPayment'])->name('verify');
     });
 
+    // Super Admin Payment Gateway & Method Settings
+    Route::middleware('superadmin')->prefix('admin/payment-settings')->name('admin.payment-settings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'index'])->name('index');
+        Route::put('/gateways/{gateway}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateGateway'])->name('gateways.update');
+        Route::post('/gateways/{gateway}/test', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'testGateway'])->name('gateways.test');
+        Route::post('/banks', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'storeBank'])->name('banks.store');
+        Route::put('/banks/{bank}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateBank'])->name('banks.update');
+        Route::delete('/banks/{bank}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'destroyBank'])->name('banks.destroy');
+        Route::put('/qris', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateQris'])->name('qris.update');
+    });
+
     // Super Admin Client Management (Guru Pribadi & Sekolah)
     Route::middleware('superadmin')->prefix('admin/clients')->name('admin.clients.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\Client\AdminClientController::class, 'index'])->name('index');
@@ -180,6 +196,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{tenant}/quota', [\App\Http\Controllers\Admin\Client\AdminClientController::class, 'adjustQuota'])->name('adjust-quota');
         Route::post('/{tenant}/duration', [\App\Http\Controllers\Admin\Client\AdminClientController::class, 'adjustDuration'])->name('adjust-duration');
         Route::post('/{tenant}/subscription', [\App\Http\Controllers\Admin\Client\AdminClientController::class, 'assignSubscription'])->name('assign-subscription');
+        Route::delete('/{tenant}', [\App\Http\Controllers\Admin\Client\AdminClientController::class, 'destroy'])->name('destroy');
     });
 
     // Super Admin Subscription Plan Configuration

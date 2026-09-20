@@ -16,8 +16,10 @@ class XenditGatewayAdapter implements PaymentGatewayInterface
 
     public function __construct()
     {
-        $this->secretKey = config('services.xendit.secret_key', env('XENDIT_SECRET_KEY'));
-        $this->webhookToken = config('services.xendit.webhook_token', env('XENDIT_WEBHOOK_TOKEN'));
+        $setting = \App\Models\PaymentGatewaySetting::where('gateway', 'xendit')->first();
+
+        $this->secretKey = $setting?->api_key ?: config('services.xendit.secret_key', env('XENDIT_SECRET_KEY'));
+        $this->webhookToken = $setting?->webhook_token ?: config('services.xendit.webhook_token', env('XENDIT_WEBHOOK_TOKEN'));
     }
 
     public function createTransaction(PaymentOrder $order): array

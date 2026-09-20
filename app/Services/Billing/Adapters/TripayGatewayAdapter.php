@@ -18,10 +18,13 @@ class TripayGatewayAdapter implements PaymentGatewayInterface
 
     public function __construct()
     {
-        $this->apiKey = config('services.tripay.api_key', env('TRIPAY_API_KEY'));
-        $this->privateKey = config('services.tripay.private_key', env('TRIPAY_PRIVATE_KEY'));
-        $this->merchantCode = config('services.tripay.merchant_code', env('TRIPAY_MERCHANT_CODE'));
-        $this->baseUrl = env('TRIPAY_ENV', 'sandbox') === 'production'
+        $setting = \App\Models\PaymentGatewaySetting::where('gateway', 'tripay')->first();
+
+        $this->apiKey = $setting?->api_key ?: config('services.tripay.api_key', env('TRIPAY_API_KEY'));
+        $this->privateKey = $setting?->private_key ?: config('services.tripay.private_key', env('TRIPAY_PRIVATE_KEY'));
+        $this->merchantCode = $setting?->merchant_code ?: config('services.tripay.merchant_code', env('TRIPAY_MERCHANT_CODE'));
+        $env = $setting?->environment ?: env('TRIPAY_ENV', 'sandbox');
+        $this->baseUrl = $env === 'production'
             ? 'https://tripay.co.id/api'
             : 'https://tripay.co.id/api-sandbox';
     }
