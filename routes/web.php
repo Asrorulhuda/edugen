@@ -135,14 +135,14 @@ Route::middleware('auth')->group(function () {
     // Super Admin Landing Page CMS Management
     Route::middleware('superadmin')->prefix('admin/landing-page')->name('admin.landing-page.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\Landing\LandingPageController::class, 'index'])->name('index');
-        Route::put('/{key}', [\App\Http\Controllers\Admin\Landing\LandingPageController::class, 'update'])->name('update');
+        Route::match(['put', 'post'], '/{key}', [\App\Http\Controllers\Admin\Landing\LandingPageController::class, 'update'])->name('update');
         Route::post('/reset/{key}', [\App\Http\Controllers\Admin\Landing\LandingPageController::class, 'reset'])->name('reset');
     });
 
     // Super Admin AI Provider & API Key Settings
     Route::middleware('superadmin')->prefix('admin/ai-settings')->name('admin.ai-settings.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\Ai\AiSettingController::class, 'index'])->name('index');
-        Route::put('/{provider}', [\App\Http\Controllers\Admin\Ai\AiSettingController::class, 'update'])->name('update');
+        Route::match(['put', 'post'], '/{provider}', [\App\Http\Controllers\Admin\Ai\AiSettingController::class, 'update'])->name('update');
         Route::post('/{provider}/test', [\App\Http\Controllers\Admin\Ai\AiSettingController::class, 'test'])->name('test');
     });
 
@@ -192,12 +192,12 @@ Route::middleware('auth')->group(function () {
     // Super Admin Payment Gateway & Method Settings
     Route::middleware('superadmin')->prefix('admin/payment-settings')->name('admin.payment-settings.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'index'])->name('index');
-        Route::put('/gateways/{gateway}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateGateway'])->name('gateways.update');
+        Route::match(['put', 'post'], '/gateways/{gateway}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateGateway'])->name('gateways.update');
         Route::post('/gateways/{gateway}/test', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'testGateway'])->name('gateways.test');
         Route::post('/banks', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'storeBank'])->name('banks.store');
-        Route::put('/banks/{bank}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateBank'])->name('banks.update');
+        Route::match(['put', 'post'], '/banks/{bank}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateBank'])->name('banks.update');
         Route::delete('/banks/{bank}', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'destroyBank'])->name('banks.destroy');
-        Route::put('/qris', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateQris'])->name('qris.update');
+        Route::match(['put', 'post'], '/qris', [\App\Http\Controllers\Admin\Billing\AdminPaymentSettingController::class, 'updateQris'])->name('qris.update');
     });
 
     // Super Admin Client Management (Guru Pribadi & Sekolah)
@@ -216,7 +216,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('superadmin')->prefix('admin/plans')->name('admin.plans.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\Billing\AdminPlanController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\Admin\Billing\AdminPlanController::class, 'store'])->name('store');
-        Route::put('/{plan}', [\App\Http\Controllers\Admin\Billing\AdminPlanController::class, 'update'])->name('update');
+        Route::match(['put', 'post'], '/{plan}', [\App\Http\Controllers\Admin\Billing\AdminPlanController::class, 'update'])->name('update');
         Route::match(['post', 'patch'], '/{plan}/toggle-status', [\App\Http\Controllers\Admin\Billing\AdminPlanController::class, 'toggleStatus'])->name('toggle-status');
         Route::delete('/{plan}', [\App\Http\Controllers\Admin\Billing\AdminPlanController::class, 'destroy'])->name('destroy');
     });

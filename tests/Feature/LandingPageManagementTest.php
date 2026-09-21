@@ -24,7 +24,7 @@ class LandingPageManagementTest extends TestCase
     {
         $superadmin = User::where('email', 'admin@edugen.id')->firstOrFail();
 
-        $response = $this->actingAs($superadmin)->put(route('admin.landing-page.update', 'hero'), [
+        $response = $this->actingAs($superadmin)->post(route('admin.landing-page.update', 'hero'), [
             'title' => 'Hero Banner Diperbarui',
             'is_active' => true,
             'content' => [

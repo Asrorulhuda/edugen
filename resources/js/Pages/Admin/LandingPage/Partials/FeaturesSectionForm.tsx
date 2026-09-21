@@ -25,7 +25,7 @@ interface FeaturesSectionProps {
 }
 
 export default function FeaturesSectionForm({ section }: FeaturesSectionProps) {
-    const { data, setData, put, processing, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, recentlySuccessful } = useForm({
         title: section?.title || 'Fitur & Keunggulan EduGen KBC',
         is_active: section?.is_active ?? true,
         content: {
@@ -61,7 +61,7 @@ export default function FeaturesSectionForm({ section }: FeaturesSectionProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('admin.landing-page.update', 'features'), {
+        post(route('admin.landing-page.update', 'features'), {
             preserveScroll: true,
         });
     };

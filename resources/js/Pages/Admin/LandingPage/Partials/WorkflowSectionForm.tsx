@@ -28,7 +28,7 @@ interface WorkflowSectionProps {
 }
 
 export default function WorkflowSectionForm({ section }: WorkflowSectionProps) {
-    const { data, setData, put, processing, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, recentlySuccessful } = useForm({
         title: section?.title || 'Alur Kerja 4 Langkah',
         is_active: section?.is_active ?? true,
         content: {
@@ -78,7 +78,7 @@ export default function WorkflowSectionForm({ section }: WorkflowSectionProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('admin.landing-page.update', 'workflow'), {
+        post(route('admin.landing-page.update', 'workflow'), {
             preserveScroll: true,
         });
     };

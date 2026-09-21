@@ -14,7 +14,7 @@ export default function PlanFormModal({ plan, isOpen, onClose }: PlanFormModalPr
 
     const isEdit = !!plan;
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         name: plan?.name ?? '',
         client_model: (plan?.client_model ?? 'INDIVIDUAL') as 'INDIVIDUAL' | 'INSTITUTION',
         price: plan?.price ?? 99000,
@@ -48,7 +48,7 @@ export default function PlanFormModal({ plan, isOpen, onClose }: PlanFormModalPr
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEdit) {
-            put(route('admin.plans.update', plan.id), {
+            post(route('admin.plans.update', plan.id), {
                 preserveScroll: true,
                 onSuccess: () => {
                     reset();

@@ -24,7 +24,7 @@ interface FaqSectionProps {
 }
 
 export default function FaqSectionForm({ section }: FaqSectionProps) {
-    const { data, setData, put, processing, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, recentlySuccessful } = useForm({
         title: section?.title || 'Pertanyaan yang Sering Diajukan (FAQ)',
         is_active: section?.is_active ?? true,
         content: {
@@ -48,7 +48,7 @@ export default function FaqSectionForm({ section }: FaqSectionProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('admin.landing-page.update', 'faqs'), {
+        post(route('admin.landing-page.update', 'faqs'), {
             preserveScroll: true,
         });
     };

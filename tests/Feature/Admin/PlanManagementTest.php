@@ -98,7 +98,7 @@ class PlanManagementTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->put(route('admin.plans.update', $plan->id), [
+        $response = $this->actingAs($this->superAdmin)->post(route('admin.plans.update', $plan->id), [
             'name' => 'Paket Diperbarui',
             'client_model' => 'INSTITUTION',
             'price' => 599000,

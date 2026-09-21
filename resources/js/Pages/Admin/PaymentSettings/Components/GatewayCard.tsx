@@ -40,7 +40,7 @@ export default function GatewayCard({ gateway, webhookUrl }: Props) {
     const [testing, setTesting] = useState(false);
     const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
-    const { data, setData, put, processing } = useForm({
+    const { data, setData, post, processing } = useForm({
         environment: gateway.environment || 'sandbox',
         api_key: gateway.api_key || '',
         private_key: gateway.private_key || '',
@@ -57,7 +57,7 @@ export default function GatewayCard({ gateway, webhookUrl }: Props) {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('admin.payment-settings.gateways.update', gateway.gateway), {
+        post(route('admin.payment-settings.gateways.update', gateway.gateway), {
             preserveScroll: true,
         });
     };

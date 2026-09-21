@@ -71,7 +71,7 @@ class AiSettingsTest extends TestCase
 
     public function test_superadmin_can_update_ai_provider_settings(): void
     {
-        $response = $this->actingAs($this->superAdmin)->put(route('admin.ai-settings.update', 'gemini'), [
+        $response = $this->actingAs($this->superAdmin)->post(route('admin.ai-settings.update', 'gemini'), [
             'api_key' => 'AIzaSyFakeKeyForTesting12345',
             'model' => 'gemini-2.5-flash',
             'base_url' => 'https://generativelanguage.googleapis.com/v1beta',

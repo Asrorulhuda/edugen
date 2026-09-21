@@ -44,7 +44,7 @@ export default function Form({
     const isEdit = !!learningOutcome;
     const isPublished = learningOutcome?.status === 'PUBLISHED';
 
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         code: learningOutcome?.code || '',
         curriculum_code: learningOutcome?.curriculum_code || curricula[0]?.code || '',
         regulation_id: learningOutcome?.regulation_id || regulations[0]?.id || '',
@@ -66,7 +66,7 @@ export default function Form({
     const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
         if (isEdit) {
-            put(route('admin.learning-outcomes.update', learningOutcome.id));
+            post(route('admin.learning-outcomes.update', learningOutcome.id));
         } else {
             post(route('admin.learning-outcomes.store'));
         }

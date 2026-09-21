@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function QrisSection({ qrisSetting }: Props) {
-    const { data, setData, put, processing } = useForm({
+    const { data, setData, post, processing } = useForm({
         merchant_name: qrisSetting.merchant_name || 'EDUGEN INDONESIA',
         nmid: qrisSetting.nmid || '',
         qr_string: qrisSetting.qr_string || '',
@@ -26,7 +26,7 @@ export default function QrisSection({ qrisSetting }: Props) {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('admin.payment-settings.qris.update'), {
+        post(route('admin.payment-settings.qris.update'), {
             preserveScroll: true,
         });
     };

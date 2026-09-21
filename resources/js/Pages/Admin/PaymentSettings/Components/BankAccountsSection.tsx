@@ -22,7 +22,7 @@ export default function BankAccountsSection({ bankAccounts }: Props) {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
 
-    const { data, setData, post, put, reset, processing } = useForm({
+    const { data, setData, post, reset, processing } = useForm({
         bank_code: '',
         bank_name: '',
         account_number: '',
@@ -64,7 +64,7 @@ export default function BankAccountsSection({ bankAccounts }: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingAccount) {
-            put(route('admin.payment-settings.banks.update', editingAccount.id), {
+            post(route('admin.payment-settings.banks.update', editingAccount.id), {
                 preserveScroll: true,
                 onSuccess: () => setModalOpen(false),
             });

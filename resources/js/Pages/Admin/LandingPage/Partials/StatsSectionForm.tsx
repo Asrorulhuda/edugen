@@ -22,7 +22,7 @@ interface StatsSectionProps {
 }
 
 export default function StatsSectionForm({ section }: StatsSectionProps) {
-    const { data, setData, put, processing, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, recentlySuccessful } = useForm({
         title: section?.title || 'Statistik & Metrik Dampak',
         is_active: section?.is_active ?? true,
         content: {
@@ -53,7 +53,7 @@ export default function StatsSectionForm({ section }: StatsSectionProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('admin.landing-page.update', 'stats'), {
+        post(route('admin.landing-page.update', 'stats'), {
             preserveScroll: true,
         });
     };

@@ -25,7 +25,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSectionForm({ section }: HeroSectionProps) {
-    const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
         title: section?.title || 'Hero Banner Utama',
         is_active: section?.is_active ?? true,
         content: {
@@ -47,7 +47,7 @@ export default function HeroSectionForm({ section }: HeroSectionProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('admin.landing-page.update', 'hero'), {
+        post(route('admin.landing-page.update', 'hero'), {
             preserveScroll: true,
         });
     };
